@@ -1,6 +1,19 @@
 from abc import ABCMeta, abstractmethod
 import wx
 
+class MainInterface(wx.Frame):
+    """
+    Main window of the visualization tool.
+
+    This class defines all the GUI elements in the main window, including
+    menus and their event methods, the statusbar, and the space for
+    StageInterfaces.
+    """
+
+    def __init__(self, parent):
+        """Create the main window and all its GUI elements"""
+        super(MainInterface, self).__init__(parent)
+
 class StageInterface(wx.Panel):
     """
     Abstract base class for interface of a stage.
