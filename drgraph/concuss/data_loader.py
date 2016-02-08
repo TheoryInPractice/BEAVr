@@ -1,6 +1,6 @@
 from drgraph.data_loader import DataLoader
 
-class ConcussDataLoader(DataLoader):
+class DataLoader(DataLoader):
     """  Loads data provided by the CONCUSS pipeline """
 
     def load(self):
