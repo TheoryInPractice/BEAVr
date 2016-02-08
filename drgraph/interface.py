@@ -1,3 +1,4 @@
+from abc import ABCMeta, abstractmethod
 import wx
 
 class StageInterface(wx.Panel):
@@ -7,6 +8,7 @@ class StageInterface(wx.Panel):
     Defines some wxPython GUI elements like a toolbar, but doesn't put anything
     in them.
     """
+    __metaclass__ = ABCMeta
 
     def __init__(self, parent):
         """Create a sizer with a toolbar and a space for the StageVisualizer"""
