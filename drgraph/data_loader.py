@@ -16,4 +16,8 @@ class DataLoader(object):
         """
         Load data
         """
-        pass
+
+class DataLoaderFactory(object):
+    """
+    Class that instantiates DataLoader objects
+    """
