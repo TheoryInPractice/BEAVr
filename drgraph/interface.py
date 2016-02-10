@@ -12,7 +12,7 @@ class MainInterface(wx.Frame):
 
     def __init__(self, parent):
         """Create the main window and all its GUI elements"""
-        super(MainInterface, self).__init__(parent)
+        super(MainInterface, self).__init__(parent, title="Visualization Tool")
 
 class StageInterface(wx.Panel):
     """
