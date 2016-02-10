@@ -14,6 +14,38 @@ class MainInterface(wx.Frame):
         """Create the main window and all its GUI elements"""
         super(MainInterface, self).__init__(parent, title="Visualization Tool")
 
+        # Menubar setup
+        menubar = wx.MenuBar()
+
+        # Load file submenu
+        fileMenu = wx.Menu()
+        fileMenu.Append(wx.NewId(), 'Open', 'Open Execution Data')
+        fileMenu.Append(wx.NewId(), 'Config', 'Configure Pipeline Data')
+        fitem = fileMenu.Append(wx.ID_EXIT, 'Quit', 'Quit application')
+        self.Bind(wx.EVT_MENU, self.OnQuit, fitem)
+        menubar.Append(fileMenu, '&File')
+
+        # Load visualization submenu
+        visualMenu = wx.Menu()
+        preferencesMenu = wx.Menu()
+        preferencesMenu.AppendCheckItem(wx.NewId(), "Color-Blind Mode")
+        visualMenu.AppendMenu(wx.NewId(), 'Preferences', preferencesMenu)
+        menubar.Append(visualMenu, '&Visuals')
+
+        # Load help submenu
+        helpMenu = wx.Menu()
+        helpMenu.Append(wx.NewId(), 'Documentation', 'Opens documentation')
+        helpMenu.Append(wx.NewId(), 'About', 'About this application')
+        menubar.Append(helpMenu, '&Help')
+
+        self.SetMenuBar(menubar)
+
+        self.Centre()
+        self.Show(True)
+    
+    def OnQuit(self, e):
+        self.Close()
+
 class StageInterface(wx.Panel):
     """
     Abstract base class for interface of a stage.

@@ -47,7 +47,7 @@ class CanvasPanel(wx.Panel):
 
 
 if __name__ == "__main__":
-    app = wx.App()
+    app = wx.App(False)
     fr = wx.Frame(None, title='Graph Test')
     panel = CanvasPanel(fr)
     panel.draw()
