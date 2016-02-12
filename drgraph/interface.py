@@ -14,6 +14,12 @@ class MainInterface(wx.Frame):
         """Create the main window and all its GUI elements"""
         super(MainInterface, self).__init__(parent, title="Visualization Tool")
 
+        self._make_menubar()
+
+        self.Center()
+
+    def _make_menubar(self):
+        """Create, populate, and show the menubar"""
         # Menubar setup
         menubar = wx.MenuBar()
 
@@ -39,9 +45,6 @@ class MainInterface(wx.Frame):
         menubar.Append(helpMenu, '&Help')
 
         self.SetMenuBar(menubar)
-
-        self.Centre()
-        self.Show(True)
     
     def OnQuit(self, e):
         self.Close()
