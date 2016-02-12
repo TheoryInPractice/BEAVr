@@ -15,6 +15,7 @@ class MainInterface(wx.Frame):
         super(MainInterface, self).__init__(parent, title="Visualization Tool")
 
         self._make_menubar()
+        self.CreateStatusBar()
 
         self.Center()
 
@@ -25,9 +26,9 @@ class MainInterface(wx.Frame):
 
         # Load file submenu
         fileMenu = wx.Menu()
-        fileMenu.Append(wx.NewId(), 'Open', 'Open Execution Data')
-        fileMenu.Append(wx.NewId(), 'Config', 'Configure Pipeline Data')
-        fitem = fileMenu.Append(wx.ID_EXIT, 'Quit', 'Quit application')
+        fileMenu.Append(wx.ID_OPEN, help='Open execution data')
+        fileMenu.Append(wx.NewId(), '&Config', 'Configure Pipeline Data')
+        fitem = fileMenu.Append(wx.ID_EXIT, help='Quit application')
         self.Bind(wx.EVT_MENU, self.OnQuit, fitem)
         menubar.Append(fileMenu, '&File')
 
@@ -40,8 +41,9 @@ class MainInterface(wx.Frame):
 
         # Load help submenu
         helpMenu = wx.Menu()
-        helpMenu.Append(wx.NewId(), 'Documentation', 'Opens documentation')
-        helpMenu.Append(wx.NewId(), 'About', 'About this application')
+        helpMenu.Append(wx.ID_HELP_CONTENTS, '&Documentation',
+                        'Opens online documentation')
+        helpMenu.Append(wx.ID_ABOUT, help='About this application')
         menubar.Append(helpMenu, '&Help')
 
         self.SetMenuBar(menubar)
@@ -58,6 +60,7 @@ class StageInterface(wx.Panel):
     """
     __metaclass__ = ABCMeta
 
+    @abstractmethod
     def __init__(self, parent):
         """Create a sizer with a toolbar and a space for the StageVisualizer"""
         super(StageInterface, self).__init__(parent)
