@@ -3,6 +3,8 @@ import webbrowser
 
 import wx
 
+#from drgraph.concuss.interface import ColorInterface
+
 class MainInterface(wx.Frame):
     """
     Main window of the visualization tool.
@@ -25,6 +27,9 @@ class MainInterface(wx.Frame):
 
         dummy = DummyStageInterface(self.notebook)
         self.notebook.AddPage(dummy, "No Visualization")
+
+        #color = ColorInterface(self.notebook)
+        #self.notebook.AddPage(color, "Color")
 
         self.Center()
 

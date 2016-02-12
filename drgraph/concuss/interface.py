@@ -1,4 +1,4 @@
-from drgraph.interface import StageInterface
+from drgraph.interface import StageInterface, StageVisualizer
 
 class ColorInterface(StageInterface):
     """GUI elements for CONCUSS coloring stage visualization"""
@@ -6,6 +6,9 @@ class ColorInterface(StageInterface):
     def __init__(self, parent):
         """Fill the empty GUI elements with coloring-specific widgets"""
         super(ColorInterface, self).__init__(parent)
+
+        vis = ColorVisualizer(self)
+        self.set_visualization(vis)
 
 class DecomposeInterface(StageInterface):
     """GUI elements for CONCUSS decomposition stage visualization"""
@@ -27,3 +30,10 @@ class CombineInterface(StageInterface):
     def __init__(self, parent):
         """Fill the empty GUI elements with combination-specific widgets"""
         super(CombineInterface, self).__init__(parent)
+
+class ColorVisualizer(StageVisualizer):
+    """The visualization for the CONCUSS coloring stage"""
+
+    def __init__(self, parent):
+        """Create the CONCUSS coloring visualization"""
+        super(ColorVisualizer, self).__init__(parent)
