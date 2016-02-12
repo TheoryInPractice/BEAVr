@@ -1,4 +1,6 @@
 from abc import ABCMeta, abstractmethod
+import webbrowser
+
 import wx
 
 class MainInterface(wx.Frame):
@@ -9,6 +11,8 @@ class MainInterface(wx.Frame):
     menus and their event methods, the statusbar, and the space for
     StageInterfaces.
     """
+
+    doc_url = 'https://github.ncsu.edu/engr-csc-sdc/2016springTeam09/wiki'
 
     def __init__(self, parent):
         """Create the main window and all its GUI elements"""
@@ -46,15 +50,21 @@ class MainInterface(wx.Frame):
 
         # Load help submenu
         helpMenu = wx.Menu()
-        helpMenu.Append(wx.ID_HELP_CONTENTS, '&Documentation',
+        doc = helpMenu.Append(wx.ID_HELP_CONTENTS, '&Documentation',
                         'Opens online documentation')
+        self.Bind(wx.EVT_MENU, self.OnDoc, doc)
         helpMenu.Append(wx.ID_ABOUT, help='About this application')
         menubar.Append(helpMenu, '&Help')
 
         self.SetMenuBar(menubar)
     
     def OnQuit(self, e):
+        """Quit the application"""
         self.Close()
+
+    def OnDoc(self, e):
+        """Open the online documentation"""
+        webbrowser.open(self.doc_url, new=2)
 
 class StageInterface(wx.Panel):
     """
@@ -100,7 +110,7 @@ class DummyStageInterface(StageInterface):
 
         open_bmp = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR,
                 self.tb_size)
-        self.tb.AddTool(wx.ID_OPEN, open_bmp)
+        self.tb.AddLabelTool(wx.ID_OPEN, "Open", open_bmp)
 
         self.tb.Realize()
 
