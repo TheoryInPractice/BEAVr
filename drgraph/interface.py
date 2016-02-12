@@ -70,8 +70,9 @@ class StageInterface(wx.Panel):
     """
     Abstract base class for interface of a stage.
 
-    Defines some wxPython GUI elements like a toolbar, but doesn't put anything
-    in them.
+    Defines wxPython GUI elements common to all StageInterfaces: a toolbar and
+    a StageVisualizer inside a sizer.  They are left empty by default, so a
+    child class must add all the specific elements it needs.
     """
     __metaclass__ = ABCMeta
 
@@ -85,7 +86,7 @@ class StageInterface(wx.Panel):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.tb = wx.ToolBar(self, style=wx.TB_VERTICAL)
 
-        self.vis = wx.Panel(self, -1)
+        self.vis = StageVisualizer(self)
 
         sizer.Add(self.tb, 0, wx.EXPAND)
         sizer.Add(self.vis, 1, wx.EXPAND)
@@ -114,4 +115,11 @@ class DummyStageInterface(StageInterface):
 
         self.tb.Realize()
 
-        self.vis.SetBackgroundColour(wx.WHITE)
+class StageVisualizer(wx.Panel):
+    """Base class for visualizing a particular stage of a pipeline"""
+
+    def __init__(self, parent):
+        """Create an empty StageVisualizer"""
+        super(StageVisualizer, self).__init__(parent)
+
+        self.SetBackgroundColour(wx.WHITE)
