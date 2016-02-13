@@ -1,9 +1,11 @@
+import os
 import webbrowser
 
 import wx
 
 from drgraph.concuss.stageinterface import ColorInterface
 from drgraph.stageinterface import DummyStageInterface
+from drgraph.data_loader import DataLoaderFactory
 
 class MainInterface(wx.Frame):
     """
@@ -28,9 +30,6 @@ class MainInterface(wx.Frame):
         dummy = DummyStageInterface(self.notebook)
         self.add_tab(dummy)
 
-        color = ColorInterface(self.notebook)
-        self.add_tab(color)
-
         self.Center()
 
     def _make_menubar(self):
@@ -40,7 +39,8 @@ class MainInterface(wx.Frame):
 
         # Load file submenu
         fileMenu = wx.Menu()
-        fileMenu.Append(wx.ID_OPEN, help='Open execution data')
+        fitem = fileMenu.Append(wx.ID_OPEN, help='Open execution data')
+        self.Bind(wx.EVT_MENU, self.OnOpen, fitem)
         fileMenu.Append(wx.NewId(), '&Config', 'Configure Pipeline Data')
         fitem = fileMenu.Append(wx.ID_EXIT, help='Quit application')
         self.Bind(wx.EVT_MENU, self.OnQuit, fitem)
@@ -67,7 +67,22 @@ class MainInterface(wx.Frame):
     def add_tab(self, interface):
         """Add an interface tab with the correct tab name"""
         self.notebook.AddPage(interface, interface.name)
-    
+
+    def OnOpen(self, e):
+        """Open a new set of visualization data"""
+        # Create the dialog
+        dlg = wx.FileDialog(self, defaultDir=os.getcwd(), style=wx.OPEN |
+                            wx.CHANGE_DIR)
+
+        # Show the dialog and open the file if the user selected one
+        if dlg.ShowModal() == wx.ID_OK:
+            dlf = DataLoaderFactory()
+            dl = dlf.data_loader(dlg.GetPath())
+            # TODO: finish loading data
+
+        # Destroy the dialog
+        dlg.Destroy()
+
     def OnQuit(self, e):
         """Quit the application"""
         self.Close()

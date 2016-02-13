@@ -21,3 +21,6 @@ class DataLoaderFactory(object):
     """
     Class that instantiates DataLoader objects
     """
+
+    def data_loader(self, filename):
+        """Create the appropriate DataLoader for the given filename"""
