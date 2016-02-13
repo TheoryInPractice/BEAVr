@@ -21,19 +21,31 @@ class StageInterface(wx.Panel):
         """Create a sizer with a toolbar and a space for the StageVisualizer"""
         super(StageInterface, self).__init__(parent)
 
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        # Make the sizer
+        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        # Make the toolbar, then add it to the sizer
         self.tb = wx.ToolBar(self, style=wx.TB_VERTICAL)
+        self.sizer.Add(self.tb, 0, wx.EXPAND)
 
-        self.vis = StageVisualizer(self)
+        # Make the visualizer
+        self.set_visualization(StageVisualizer(self))
 
-        sizer.Add(self.tb, 0, wx.EXPAND)
-        sizer.Add(self.vis, 1, wx.EXPAND)
-
-        self.SetSizer(sizer)
+        # We want to see what's in the sizer
+        self.SetSizer(self.sizer)
 
     def set_visualization(self, vis):
         """Set the panel to be used for visualization"""
+        # Destroy the old visualization to avoid leaking memory
+        try:
+            self.vis.Destroy()
+        except AttributeError:
+            # Don't crash if there was no old visualization
+            pass
+        # Set the new visualizer
         self.vis = vis
+        # Add it to our sizer
+        self.sizer.Add(self.vis, 1, wx.EXPAND)
 
 class DummyStageInterface(StageInterface):
     """

@@ -26,7 +26,7 @@ class MainInterface(wx.Frame):
         self.notebook = wx.Notebook(self, wx.NewId(), style=wx.BK_DEFAULT)
 
         dummy = DummyStageInterface(self.notebook)
-        self.notebook.AddPage(dummy, "No Visualization")
+        self.add_tab(dummy)
 
         color = ColorInterface(self.notebook)
         self.add_tab(color)
