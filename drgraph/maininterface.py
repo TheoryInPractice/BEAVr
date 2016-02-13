@@ -22,6 +22,8 @@ class MainInterface(wx.Frame):
         """Create the main window and all its GUI elements"""
         super(MainInterface, self).__init__(parent, title="Visualization Tool")
 
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+
         self._make_menubar()
         self.CreateStatusBar()
 
@@ -30,7 +32,7 @@ class MainInterface(wx.Frame):
         dummy = DummyStageInterface(self.notebook)
         self.add_tab(dummy)
 
-        self.Center()
+        self._restore_geometry()
 
     def _make_menubar(self):
         """Create, populate, and show the menubar"""
@@ -64,9 +66,43 @@ class MainInterface(wx.Frame):
 
         self.SetMenuBar(menubar)
 
+    def _restore_geometry(self):
+        """Restore the window geometry from last time"""
+        config = wx.ConfigBase.Get()
+        config.SetPath("/window/geometry")
+        x = config.ReadInt("x", -1)
+        y = config.ReadInt("y", -1)
+        w = config.ReadInt("w", -1)
+        h = config.ReadInt("h", -1)
+        # Restore position
+        if x != -1 and y != -1:
+            self.MoveXY(x, y)
+        else:
+            self.Center()
+        # Restore size
+        print w, h
+        if w != -1 and h != -1:
+            self.SetSize((w, h))
+
+    def _save_geometry(self):
+        """Store the current window geometry"""
+        config = wx.ConfigBase.Get()
+        config.SetPath("/window/geometry")
+        x, y = self.GetPositionTuple()
+        w, h = self.GetSizeTuple()
+        config.WriteInt("x", x)
+        config.WriteInt("y", y)
+        config.WriteInt("w", w)
+        config.WriteInt("h", h)
+
     def add_tab(self, interface):
         """Add an interface tab with the correct tab name"""
         self.notebook.AddPage(interface, interface.name)
+
+    def OnClose(self, e):
+        """Close the main window"""
+        self._save_geometry()
+        self.Destroy()
 
     def OnOpen(self, e):
         """Open a new set of visualization data"""
