@@ -38,6 +38,7 @@ class CanvasPanel(wx.Panel):
         #self.vbox.Fit(self)
         self.SetSizer(self.sizer)
         self.Fit()
+        self.toolbar.pan()
 
     def draw(self):
         #t = arange(0.0, 3.0, 0.01)
