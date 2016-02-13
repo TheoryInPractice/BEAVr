@@ -1,4 +1,4 @@
-from drgraph.interface import StageInterface, StageVisualizer
+from drgraph.stageinterface import StageInterface, StageVisualizer
 
 class ColorInterface(StageInterface):
     """GUI elements for CONCUSS coloring stage visualization"""
