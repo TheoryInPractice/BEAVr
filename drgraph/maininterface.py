@@ -29,7 +29,7 @@ class MainInterface(wx.Frame):
         self.notebook.AddPage(dummy, "No Visualization")
 
         color = ColorInterface(self.notebook)
-        self.notebook.AddPage(color, "Color")
+        self.add_tab(color)
 
         self.Center()
 
@@ -63,6 +63,10 @@ class MainInterface(wx.Frame):
         menubar.Append(helpMenu, '&Help')
 
         self.SetMenuBar(menubar)
+
+    def add_tab(self, interface):
+        """Add an interface tab with the correct tab name"""
+        self.notebook.AddPage(interface, interface.name)
     
     def OnQuit(self, e):
         """Quit the application"""

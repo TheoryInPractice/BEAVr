@@ -14,6 +14,8 @@ class StageInterface(wx.Panel):
 
     tb_size = (24, 24)
 
+    name = None
+
     @abstractmethod
     def __init__(self, parent):
         """Create a sizer with a toolbar and a space for the StageVisualizer"""
@@ -40,6 +42,8 @@ class DummyStageInterface(StageInterface):
     The DummyStageInterface has an open button in its toolbar and a blank white
     visualization.
     """
+
+    name = "No Visualization"
 
     def __init__(self, parent):
         """Create a StageInterface with nothing special added"""
