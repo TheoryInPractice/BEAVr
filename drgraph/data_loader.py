@@ -21,12 +21,10 @@ class DataLoader(object):
         """
 
 class DataLoaderFactory(object):
-    """
-    Class that instantiates DataLoader objects
-    """
+    """ Class that instantiates DataLoader objects """
 
     def data_loader(self, filename):
-        """Create the appropriate DataLoader for the given filename"""
+        """ Create the appropriate DataLoader for the given filename """
 
         # Open zip archive as ZipFile object
         archive = ZipFile( filename, 'r' )
@@ -35,15 +33,16 @@ class DataLoaderFactory(object):
 
         # Create config parser.
         parser = ConfigParser.ConfigParser()
-        # Parse visinfo.cfg for pipeline name
+        # Parse visinfo.cfg for name of the pipeline the archive came from
         parser.readfp( myzip.open( dir_name + '/visinfo.cfg', 'r' ) )
-        pipeline_name = parser.get( 'pipeline','name' )
+        pipe_name = parser.get( 'pipeline','name' )
 
         # Check if data_loader.py exists in directory for the given pipeline
-        if not os.path.exists( './' + pipeline_name + '/data_loader.py' ):
-            sys.exit( './' + pipeline_name + '/data_loader.py missing.\n' )
+        if not os.path.exists( './' + pipe_name + '/data_loader.py' ):
+            sys.exit( './' + pipe_name + '/data_loader.py missing.\n' )
 
-        # Create and return data_loader object for pipeline
-        ## TODO
-        ## from importlib import import_module
-        ## pipe_data_loader = import_module( pipeline_name + '/data_loader.py' )
+        # Import DataLoader class for the given pipeline
+        from importlib import import_module
+        pipe_data_loader = import_module( pipe_name + '/data_loader.py' )
+        # Create and return DataLoader object for the given pipeline
+        return pipe_data_loader.Factory.create()
