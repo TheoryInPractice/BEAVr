@@ -1,3 +1,5 @@
+import wx
+
 from drgraph.stageinterface import StageInterface, StageVisualizer
 
 class ColorInterface(StageInterface):
@@ -8,6 +10,15 @@ class ColorInterface(StageInterface):
     def __init__(self, parent):
         """Fill the empty GUI elements with coloring-specific widgets"""
         super(ColorInterface, self).__init__(parent)
+
+        fwd_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD, wx.ART_TOOLBAR,
+                self.tb_size)
+        self.tb.AddLabelTool(wx.ID_FORWARD, "Forward", fwd_bmp)
+        back_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_BACK, wx.ART_TOOLBAR,
+                self.tb_size)
+        self.tb.AddLabelTool(wx.ID_BACKWARD, "Backward", back_bmp)
+
+        self.tb.Realize()
 
         vis = ColorVisualizer(self)
         self.set_visualization(vis)
