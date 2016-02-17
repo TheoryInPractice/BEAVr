@@ -1,13 +1,11 @@
-from drgraph.data_loader import DataLoader
+import drgraph.data_loader
 
 class Factory:
-    """
-    Generically named wrapper for creating ConcussDataLoader via
-    data_loader.DataLoaderFactory
-    """
-    
-    def create():
-        return ConcussDataLoader()
+    """ Wrapper allowing DataLoaderFactory to create a ConcussDataLoader """
+
+    def create(archive):
+        """ Creates ConcussDataLoader with given ZipFile archive object """
+        return ConcussDataLoader(archive)
 
 
 class ConcussDataLoader(DataLoader):
@@ -16,5 +14,5 @@ class ConcussDataLoader(DataLoader):
     def load(self):
         """
         Load the data
-        :return:
+        :returns:
         """
