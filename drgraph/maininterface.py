@@ -31,6 +31,8 @@ class MainInterface(wx.Frame):
 
         dummy = DummyStageInterface(self.notebook)
         self.add_tab(dummy)
+        colorStage = ColorInterface(self.notebook)
+        self.add_tab(colorStage)
 
         self._restore_geometry()
 

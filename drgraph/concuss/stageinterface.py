@@ -1,5 +1,18 @@
 import wx
 
+from numpy import random
+from numpy import arange, sin, pi
+import matplotlib
+matplotlib.use('WXAgg')
+
+import matplotlib.pyplot as plt
+import networkx as nx
+
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
+from matplotlib.backends.backend_wx import NavigationToolbar2Wx
+from matplotlib.figure import Figure
+
+
 from drgraph.stageinterface import StageInterface, StageVisualizer
 
 class ColorInterface(StageInterface):
@@ -56,3 +69,30 @@ class ColorVisualizer(StageVisualizer):
     def __init__(self, parent):
         """Create the CONCUSS coloring visualization"""
         super(ColorVisualizer, self).__init__(parent)
+
+        self.figure = matplotlib.figure.Figure()
+        self.axes = self.figure.add_subplot(111)
+        self.figure.subplots_adjust(top=1, bottom=0, right=1, left=0)
+
+        random.seed(0)
+        self.G = nx.read_edgelist('karate.txt')
+        pos = nx.spring_layout(self.G)
+        nx.draw_networkx(self.G, pos, ax=self.axes, with_labels=False)
+        self.axes.get_xaxis().set_visible(False)
+        self.axes.get_yaxis().set_visible(False)
+        #nx.draw(self.G, ax=self.axes)
+
+        #data = [random.random() for i in range(25)]
+        #self.axes.plot(data, '*-')
+
+        self.canvas = FigureCanvas(self, -1, self.figure)
+
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
+        self.SetSizer(self.sizer)
+
+        self.toolbar = NavigationToolbar2Wx(self.canvas)
+        self.toolbar.pan()
+        self.toolbar.Hide()
+
+        self.Fit()
