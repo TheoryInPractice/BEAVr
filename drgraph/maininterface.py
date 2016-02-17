@@ -80,7 +80,6 @@ class MainInterface(wx.Frame):
         else:
             self.Center()
         # Restore size
-        print w, h
         if w != -1 and h != -1:
             self.SetSize((w, h))
 
