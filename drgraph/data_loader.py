@@ -1,4 +1,6 @@
 from abc import ABCMeta, abstractmethod
+from zipfile import ZipFile
+import ConfigParser
 
 class DataLoader(object):
     """ Abstract Data Loader """
@@ -28,15 +30,13 @@ class DataLoaderFactory(object):
         """
         
         # Open zip archive as ZipFile object
-        from zipfile import ZipFile
         archive = ZipFile(filename, 'r')
-        # dir_name is archive name with extension removed
-        import os.path
-        dir_name = os.path.basename(filename).split('.')[0]
+        # dir_name is archive filename with extension removed
+        from os.path import basename
+        dir_name = basename(filename).split('.')[0]
         print dir_name
 
         # Create config parser.
-        import ConfigParser
         parser = ConfigParser.ConfigParser()
         # Parse visinfo.cfg for name of the pipeline the archive came from
         parser.readfp( archive.open( dir_name + '/visinfo.cfg', 'r' ) )
@@ -50,6 +50,7 @@ class DataLoaderFactory(object):
 
         # Import DataLoader class for the given pipeline
         from importlib import import_module
-        pipe_data_loader = import_module( pipe_name + '.data_loader' )
+        pipe_loader = import_module( 'drgraph.' + pipe_name + '.data_loader' )
         # Create and return DataLoader object for the given pipeline
-        return pipe_data_loader.Factory.create( archive )
+        pipe_factory = pipe_loader.Factory()
+        return pipe_factory.create( archive )
