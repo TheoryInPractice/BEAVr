@@ -135,6 +135,8 @@ class MainInterface(wx.Frame):
         # Destroy the dialog
         dlg.Destroy()
 
+        # At this point, we might be using several extra megabytes of RAM, so
+        # run garbage collection to clean up unused objects.
         gc.collect()
 
     def OnQuit(self, e):
