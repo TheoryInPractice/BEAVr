@@ -39,7 +39,8 @@ class DataLoaderFactory(object):
         # Create config parser.
         parser = ConfigParser.ConfigParser()
         # Parse visinfo.cfg for name of the pipeline the archive came from
-        parser.readfp(archive.open(dir_name + '/visinfo.cfg', 'r'))
+        with archive.open(dir_name + '/visinfo.cfg', 'r') as visinfo:
+            parser.readfp(visinfo)
         pipe_name = parser.get('pipeline', 'name')
 
         # Import DataLoader class for the given pipeline

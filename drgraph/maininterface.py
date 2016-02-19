@@ -110,8 +110,10 @@ class MainInterface(wx.Frame):
     def OnOpen(self, e):
         """Open a new set of visualization data"""
         # Create the dialog
-        dlg = wx.FileDialog(self, defaultDir=os.getcwd(), style=wx.OPEN |
-                            wx.CHANGE_DIR)
+        dlg = wx.FileDialog(self, defaultDir=os.getcwd(),
+                            wildcard='Visualization archives (*.zip)|*.zip|' +
+                            'All files (*)|*',
+                            style=wx.OPEN | wx.CHANGE_DIR)
 
         # Show the dialog and open the file if the user selected one
         if dlg.ShowModal() == wx.ID_OK:
@@ -127,6 +129,7 @@ class MainInterface(wx.Frame):
                 self.remove_all_tabs()
                 self.add_tab(colorStage)
                 colorStage.vis.set_graph(graph)
+                dl.archive.close()
 
         # Destroy the dialog
         dlg.Destroy()
