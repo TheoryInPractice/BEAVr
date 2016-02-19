@@ -1,5 +1,8 @@
-from drgraph.data_loader import DataLoader
+from os.path import basename
+
 from networkx import graph
+
+from drgraph.data_loader import DataLoader
 
 class Factory:
     """ Wrapper allowing DataLoaderFactory to create a ConcussDataLoader """
@@ -33,7 +36,6 @@ class ConcussDataLoader(DataLoader):
             raise Exception('Cannot find graph file in archive.')
         elif len(graphs) > 1:
             raise Exception('Archive contains multiple graph files.')
-        from os.path import basename
         graph_name = basename(graphs[0])
 
         # Get extension of graph file, which indicates storage format
