@@ -1,17 +1,14 @@
 import wx
-
 from numpy import random
-from numpy import arange, sin, pi
+import networkx as nx
 import matplotlib
 matplotlib.use('WXAgg')
-
 import matplotlib.pyplot as plt
-import networkx as nx
-
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
-from matplotlib.backends.backend_wx import NavigationToolbar2Wx
+from matplotlib.backends.backend_wxagg import (
+    FigureCanvasWxAgg as FigureCanvas,
+    NavigationToolbar2WxAgg as NavigationToolbar
+)
 from matplotlib.figure import Figure
-
 
 from drgraph.stageinterface import StageInterface, StageVisualizer
 
@@ -86,7 +83,7 @@ class ColorVisualizer(StageVisualizer):
         self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
         self.SetSizer(self.sizer)
 
-        self.toolbar = NavigationToolbar2Wx(self.canvas)
+        self.toolbar = NavigationToolbar(self.canvas)
         self.toolbar.pan()
         self.toolbar.Hide()
 
