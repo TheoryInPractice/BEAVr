@@ -5,7 +5,7 @@ import wx
 
 from drgraph.concuss.stageinterface import ColorInterface
 from drgraph.stageinterface import DummyStageInterface
-from drgraph.data_loader import DataLoaderFactory
+from drgraph.data_loader import DataLoaderFactory, UnknownPipelineError
 
 class MainInterface(wx.Frame):
     """
@@ -31,8 +31,6 @@ class MainInterface(wx.Frame):
 
         dummy = DummyStageInterface(self.notebook)
         self.add_tab(dummy)
-        colorStage = ColorInterface(self.notebook)
-        self.add_tab(colorStage)
 
         self._restore_geometry()
 
@@ -100,6 +98,10 @@ class MainInterface(wx.Frame):
         """Add an interface tab with the correct tab name"""
         self.notebook.AddPage(interface, interface.name)
 
+    def remove_all_tabs(self):
+        """Remove all the StageInterface tabs"""
+        self.notebook.DeleteAllPages()
+
     def OnClose(self, e):
         """Close the main window"""
         self._save_geometry()
@@ -114,8 +116,17 @@ class MainInterface(wx.Frame):
         # Show the dialog and open the file if the user selected one
         if dlg.ShowModal() == wx.ID_OK:
             dlf = DataLoaderFactory()
-            dl = dlf.data_loader(dlg.GetPath())
-            graph = dl.load()
+            try:
+                dl = dlf.data_loader(dlg.GetPath())
+            except UnknownPipelineError as e:
+                e_dlg = wx.MessageDialog(None, e.msg, 'Error', wx.ICON_ERROR)
+                e_dlg.ShowModal()
+            else:
+                graph = dl.load()
+                colorStage = ColorInterface(self.notebook)
+                self.remove_all_tabs()
+                self.add_tab(colorStage)
+                colorStage.vis.set_graph(graph)
 
         # Destroy the dialog
         dlg.Destroy()

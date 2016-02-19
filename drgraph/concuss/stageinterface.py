@@ -74,16 +74,11 @@ class ColorVisualizer(StageVisualizer):
         self.axes = self.figure.add_subplot(111)
         self.figure.subplots_adjust(top=1, bottom=0, right=1, left=0)
 
-        random.seed(0)
-        self.G = nx.read_edgelist('karate.txt')
-        pos = nx.spring_layout(self.G)
-        nx.draw_networkx(self.G, pos, ax=self.axes, with_labels=False)
         self.axes.get_xaxis().set_visible(False)
         self.axes.get_yaxis().set_visible(False)
-        #nx.draw(self.G, ax=self.axes)
 
-        #data = [random.random() for i in range(25)]
-        #self.axes.plot(data, '*-')
+        self.graph = nx.Graph()
+        self.layout = []
 
         self.canvas = FigureCanvas(self, -1, self.figure)
 
@@ -96,3 +91,10 @@ class ColorVisualizer(StageVisualizer):
         self.toolbar.Hide()
 
         self.Fit()
+
+    def set_graph(self, graph):
+        """Set the graph to display"""
+        random.seed(0)
+        self.graph = graph
+        self.layout = nx.spring_layout(self.graph)
+        nx.draw_networkx(self.graph, self.layout, ax=self.axes, with_labels=False)

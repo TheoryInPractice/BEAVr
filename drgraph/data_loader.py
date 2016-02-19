@@ -1,6 +1,8 @@
 from abc import ABCMeta, abstractmethod
 from zipfile import ZipFile
 import ConfigParser
+from os.path import basename, exists
+from importlib import import_module
 
 class DataLoader(object):
     """ Abstract Data Loader """
@@ -32,24 +34,36 @@ class DataLoaderFactory(object):
         # Open zip archive as ZipFile object
         archive = ZipFile(filename, 'r')
         # dir_name is archive filename with extension removed
-        from os.path import basename, exists
         dir_name = basename(filename).split('.')[0]
 
         # Create config parser.
         parser = ConfigParser.ConfigParser()
         # Parse visinfo.cfg for name of the pipeline the archive came from
-        parser.readfp( archive.open( dir_name + '/visinfo.cfg', 'r' ) )
+        parser.readfp(archive.open(dir_name + '/visinfo.cfg', 'r'))
         pipe_name = parser.get('pipeline', 'name')
 
-        # Check if data_loader.py exists in directory for the given pipeline
-        # TODO: Change 'drgraph' directory before finalization of project
-        if not exists( './drgraph/' + pipe_name + '/data_loader.py' ):
-            from sys import exit
-            exit( '/' + pipe_name + '/data_loader.py does not exist.\n' )
-
         # Import DataLoader class for the given pipeline
-        from importlib import import_module
-        pipe_loader = import_module( 'drgraph.' + pipe_name + '.data_loader' )
+        try:
+            pipe_loader = import_module('drgraph.' + pipe_name + '.data_loader')
+        except ImportError:
+            raise UnknownPipelineError(pipe_name)
+            
         # Create and return DataLoader object for the given pipeline
         pipe_factory = pipe_loader.Factory()
-        return pipe_factory.create( archive )
+        return pipe_factory.create(archive)
+
+class UnknownPipelineError(Exception):
+    """
+    Exception for visualization files from unknown pipelines
+    
+    Attributes:
+        pipe -- The pipeline name in question
+        msg -- Explanation of the error
+    """
+
+    def __init__(self, pipe):
+        self.pipe = pipe
+        self.msg = "Unknown pipeline " + repr(self.pipe)
+
+    def __str__(self):
+        return self.msg
