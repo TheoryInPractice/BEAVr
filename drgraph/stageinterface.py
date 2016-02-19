@@ -38,6 +38,7 @@ class StageInterface(wx.Panel):
         """Set the panel to be used for visualization"""
         # Destroy the old visualization to avoid leaking memory
         try:
+            self.sizer.Remove(self.vis)
             self.vis.Destroy()
         except AttributeError:
             # Don't crash if there was no old visualization

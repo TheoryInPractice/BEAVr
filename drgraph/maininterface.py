@@ -1,5 +1,6 @@
 import os
 import webbrowser
+import gc
 
 import wx
 
@@ -133,6 +134,8 @@ class MainInterface(wx.Frame):
 
         # Destroy the dialog
         dlg.Destroy()
+
+        gc.collect()
 
     def OnQuit(self, e):
         """Quit the application"""
