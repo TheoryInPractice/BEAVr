@@ -16,7 +16,7 @@ class DataLoader(object):
     @abstractmethod
     def load(self):
         """
-        Load data
+        Load data from self.archive
         """
 
 class DataLoaderFactory(object):
@@ -32,9 +32,8 @@ class DataLoaderFactory(object):
         # Open zip archive as ZipFile object
         archive = ZipFile(filename, 'r')
         # dir_name is archive filename with extension removed
-        from os.path import basename
+        from os.path import basename, exists
         dir_name = basename(filename).split('.')[0]
-        print dir_name
 
         # Create config parser.
         parser = ConfigParser.ConfigParser()
@@ -44,7 +43,7 @@ class DataLoaderFactory(object):
 
         # Check if data_loader.py exists in directory for the given pipeline
         # TODO: Change 'drgraph' directory before finalization of project
-        if not os.path.exists( './drgraph/' + pipe_name + '/data_loader.py' ):
+        if not exists( './drgraph/' + pipe_name + '/data_loader.py' ):
             from sys import exit
             exit( '/' + pipe_name + '/data_loader.py does not exist.\n' )
 

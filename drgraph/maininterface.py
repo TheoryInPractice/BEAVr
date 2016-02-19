@@ -115,7 +115,7 @@ class MainInterface(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             dlf = DataLoaderFactory()
             dl = dlf.data_loader(dlg.GetPath())
-            # TODO: finish loading data
+            graph = dl.load()
 
         # Destroy the dialog
         dlg.Destroy()
