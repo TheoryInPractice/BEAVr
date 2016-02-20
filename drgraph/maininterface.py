@@ -1,6 +1,7 @@
 import os
 import webbrowser
 import gc
+from zipfile import BadZipfile
 
 import wx
 
@@ -121,6 +122,11 @@ class MainInterface(wx.Frame):
             dlf = DataLoaderFactory()
             try:
                 dl = dlf.data_loader(dlg.GetPath())
+            except (KeyError, BadZipfile) as e:
+                e_dlg = wx.MessageDialog(None, 'File does not contain valid ' +
+                                         'visualization data', 'Error',
+                                         wx.ICON_ERROR)
+                e_dlg.ShowModal()
             except UnknownPipelineError as e:
                 e_dlg = wx.MessageDialog(None, e.msg, 'Error', wx.ICON_ERROR)
                 e_dlg.ShowModal()
