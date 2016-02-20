@@ -33,13 +33,11 @@ class DataLoaderFactory(object):
         
         # Open zip archive as ZipFile object
         archive = ZipFile(filename, 'r')
-        # dir_name is archive filename with extension removed
-        dir_name = basename(filename).split('.')[0]
 
         # Create config parser.
         parser = ConfigParser.ConfigParser()
         # Parse visinfo.cfg for name of the pipeline the archive came from
-        with archive.open(dir_name + '/visinfo.cfg', 'r') as visinfo:
+        with archive.open('visinfo.cfg', 'r') as visinfo:
             parser.readfp(visinfo)
         pipe_name = parser.get('pipeline', 'name')
 
@@ -51,7 +49,7 @@ class DataLoaderFactory(object):
             
         # Create and return DataLoader object for the given pipeline
         pipe_factory = pipe_loader.Factory()
-        return pipe_factory.create(archive)
+        return pipe_factory.create(archive, parser)
 
 class UnknownPipelineError(Exception):
     """

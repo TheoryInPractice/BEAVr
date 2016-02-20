@@ -7,13 +7,21 @@ from drgraph.data_loader import DataLoader
 class Factory:
     """ Wrapper allowing DataLoaderFactory to create a ConcussDataLoader """
 
-    def create(self, archive):
-        """ Creates ConcussDataLoader with given ZipFile archive object """
-        return ConcussDataLoader(archive)
+    def create(self, archive, parser):
+        """
+        Creates ConcussDataLoader with given vis archive and parsed
+        configuration
+        """
+        return ConcussDataLoader(archive, parser)
 
 
 class ConcussDataLoader(DataLoader):
     """ Loads data provided by the CONCUSS pipeline """
+
+    def __init__(self, archive, parser):
+        super(ConcussDataLoader, self).__init__(archive)
+
+        self.parser = parser
 
     def load(self):
         """
@@ -29,24 +37,16 @@ class ConcussDataLoader(DataLoader):
         Load the data
         :returns: graph 
         """
-        
-        # Locate graph's filename in archive
-        graphs = [fn for fn in self.archive.namelist() if '/graph.' in fn]
-        if len(graphs) == 0:
-            raise Exception('Cannot find graph file in archive.')
-        elif len(graphs) > 1:
-            raise Exception('Archive contains multiple graph files.')
-        graph_name = basename(graphs[0])
+
+        graph_name = self.parser.get('graphs', 'graph')
 
         # Get extension of graph file, which indicates storage format
         graph_ext = graph_name.split('.')[1]
         # Get correct reader for graph's format, based on file extension
         graph_reader = self.get_graph_reader(graph_ext)
-        # Get name of archive's main directory, includes '/'
-        dir_name =  self.archive.namelist()[0]
 
         # Open graph as file object
-        graph_file = self.archive.open(dir_name + graph_name, 'r')
+        graph_file = self.archive.open(graph_name, 'r')
         # Use correct reader to get and return NetworkX graph from graph file
         return graph_reader(graph_file)
 
