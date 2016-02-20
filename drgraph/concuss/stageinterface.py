@@ -91,7 +91,50 @@ class ColorVisualizer(StageVisualizer):
 
     def set_graph(self, graph):
         """Set the graph to display"""
-        random.seed(0)
         self.graph = graph
+        random.seed(0)
         self.layout = nx.spring_layout(self.graph)
         nx.draw_networkx(self.graph, self.layout, ax=self.axes, with_labels=False)
+
+        self.zoomer = self.zoom_factory(self.axes, base_scale=1.5)
+
+    def zoom_factory(self, ax, base_scale=2.):
+        """
+        Handle zooming using the scroll wheel.
+
+        Original source: https://gist.github.com/tacaswell/3144287
+        """
+        def zoom_fun(event):
+            # Get the current x and y limits
+            cur_xlim = ax.get_xlim()
+            cur_ylim = ax.get_ylim()
+            cur_xrange = (cur_xlim[1] - cur_xlim[0])*.5
+            cur_yrange = (cur_ylim[1] - cur_ylim[0])*.5
+            # Get event location
+            xdata = event.xdata
+            ydata = event.ydata
+            if event.button == 'up':
+                # Deal with zoom in
+                scale_factor = 1/base_scale
+            elif event.button == 'down':
+                # Deal with zoom out
+                scale_factor = base_scale
+            else:
+                # Deal with something that should never happen
+                scale_factor = 1
+                print event.button
+            # Set new limits - improved from original
+            ax.set_xlim([xdata - (xdata - cur_xlim[0])*scale_factor,
+                         xdata + (cur_xlim[1] - xdata)*scale_factor])
+            ax.set_ylim([ydata - (ydata - cur_ylim[0])*scale_factor,
+                         ydata + (cur_ylim[1] - ydata)*scale_factor])
+            # Force redraw
+            self.figure.canvas.draw()
+
+        # Get the figure of interest
+        fig = ax.get_figure()
+        # Attach the call back
+        fig.canvas.mpl_connect('scroll_event', zoom_fun)
+
+        # Return the function
+        return zoom_fun
