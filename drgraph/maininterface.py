@@ -115,7 +115,7 @@ class MainInterface(wx.Frame):
         dlg = wx.FileDialog(self, defaultDir=os.getcwd(),
                             wildcard='Visualization archives (*.zip)|*.zip|' +
                             'All files (*)|*',
-                            style=wx.OPEN | wx.CHANGE_DIR)
+                            style=wx.OPEN)
 
         # Show the dialog and open the file if the user selected one
         if dlg.ShowModal() == wx.ID_OK:

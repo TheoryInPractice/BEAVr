@@ -1,3 +1,6 @@
+import os
+import os.path as path
+
 import wx
 from numpy import random
 import networkx as nx
@@ -21,17 +24,32 @@ class ColorInterface(StageInterface):
         """Fill the empty GUI elements with coloring-specific widgets"""
         super(ColorInterface, self).__init__(parent)
 
+        # Forward button
         fwd_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD, wx.ART_TOOLBAR,
                 self.tb_size)
         self.tb.AddLabelTool(wx.ID_FORWARD, "Forward", fwd_bmp)
+        # Backward button
         back_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_BACK, wx.ART_TOOLBAR,
                 self.tb_size)
         self.tb.AddLabelTool(wx.ID_BACKWARD, "Backward", back_bmp)
+
+        self.tb.AddSeparator()
+
+        # Random Layout buton
+        tali_path = path.join(os.getcwd(), 'data', 'icons', 'tali.png')
+        rand_bmp = wx.Bitmap(tali_path, wx.BITMAP_TYPE_PNG)
+        rand = self.tb.AddLabelTool(wx.NewId(), "Random Layout", rand_bmp)
+        self.Bind(wx.EVT_TOOL, self.on_random, rand)
 
         self.tb.Realize()
 
         vis = ColorVisualizer(self)
         self.set_visualization(vis)
+
+    def on_random(self, e):
+        """Generate a new random graph layout"""
+        self.vis.graph_layout()
+        self.vis.figure.canvas.draw()
 
 class DecomposeInterface(StageInterface):
     """GUI elements for CONCUSS decomposition stage visualization"""
@@ -92,11 +110,17 @@ class ColorVisualizer(StageVisualizer):
     def set_graph(self, graph):
         """Set the graph to display"""
         self.graph = graph
-        random.seed(0)
-        self.layout = nx.spring_layout(self.graph)
-        nx.draw_networkx(self.graph, self.layout, ax=self.axes, with_labels=False)
+        self.graph_layout(0)
 
         self.zoomer = self.zoom_factory(self.axes, base_scale=1.5)
+
+    def graph_layout(self, seed=None):
+        """Compute a layout of the graph, with an optional seed"""
+        if seed is not None:
+            random.seed(seed)
+        self.layout = nx.spring_layout(self.graph)
+        self.axes.clear()
+        nx.draw_networkx(self.graph, self.layout, ax=self.axes, with_labels=False)
 
     def zoom_factory(self, ax, base_scale=2.):
         """
