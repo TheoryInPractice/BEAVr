@@ -18,11 +18,6 @@ class Factory:
 class ConcussDataLoader(DataLoader):
     """ Loads data provided by the CONCUSS pipeline """
 
-    def __init__(self, archive, parser):
-        super(ConcussDataLoader, self).__init__(archive)
-
-        self.parser = parser
-
     def load(self):
         """
         Load data from self.archive
@@ -46,9 +41,9 @@ class ConcussDataLoader(DataLoader):
         graph_reader = self.get_graph_reader(graph_ext)
 
         # Open graph as file object
-        graph_file = self.archive.open(graph_name, 'r')
-        # Use correct reader to get and return NetworkX graph from graph file
-        return graph_reader(graph_file)
+        with self.archive.open(graph_name, 'r') as graph_file:
+            # Use correct reader to get and return NetworkX graph from graph file
+            return graph_reader(graph_file)
 
 
     def get_graph_reader(self, ext):

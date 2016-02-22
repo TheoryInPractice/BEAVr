@@ -8,12 +8,13 @@ class DataLoader(object):
     """ Abstract Data Loader """
     __metaclass__ = ABCMeta
 
-    def __init__(self, archive):
+    def __init__(self, archive, parser):
         """
         Get the json configuration loaded by the DataLoaderFactory
         :param config_json: The loaded json configuration
         """
         self.archive = archive
+        self.parser = parser
 
     @abstractmethod
     def load(self):
@@ -24,16 +25,24 @@ class DataLoader(object):
 class DataLoaderFactory(object):
     """ Class that instantiates DataLoader objects """
 
-    def data_loader(self, filename):
+    def load_data(self, filename):
         """
-        Create the appropriate DataLoader for the given zip archive filename
-        :param filename: Name of zip archive file containing execution data
+        Load data from the appropriate DataLoader for given archive filename
+        :param filename: name of zip archive file containing execution data
+        :returns: data returned by pipeline.DataLoader.load_data()
+        """
+        # Open zip archive as ZipFile object
+        with ZipFile(filename, 'r') as archive:
+            dl = self.data_loader(archive)
+            return dl.load()
+
+
+    def data_loader(self, archive):
+        """
+        Create the appropriate DataLoader for the given ZipFile archive
+        :param archive: ZipFile object for archive containing execution data
         :returns: DataLoader for the pipeline that the execution data came from
         """
-        
-        # Open zip archive as ZipFile object
-        archive = ZipFile(filename, 'r')
-
         # Create config parser.
         parser = ConfigParser.ConfigParser()
         # Parse visinfo.cfg for name of the pipeline the archive came from

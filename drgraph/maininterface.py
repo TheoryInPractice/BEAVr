@@ -121,7 +121,7 @@ class MainInterface(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             dlf = DataLoaderFactory()
             try:
-                dl = dlf.data_loader(dlg.GetPath())
+                graph = dlf.load_data(dlg.GetPath())
             except (KeyError, BadZipfile) as e:
                 e_dlg = wx.MessageDialog(None, 'File does not contain valid ' +
                                          'visualization data', 'Error',
@@ -131,12 +131,10 @@ class MainInterface(wx.Frame):
                 e_dlg = wx.MessageDialog(None, e.msg, 'Error', wx.ICON_ERROR)
                 e_dlg.ShowModal()
             else:
-                graph = dl.load()
                 colorStage = ColorInterface(self.notebook)
                 self.remove_all_tabs()
                 self.add_tab(colorStage)
                 colorStage.vis.set_graph(graph)
-                dl.archive.close()
 
         # Destroy the dialog
         dlg.Destroy()
