@@ -21,21 +21,20 @@ class ConcussDataLoader(DataLoader):
     def load(self):
         """
         Load data from self.archive
-        :returns: graph 
+        :returns: graph and colorings
         """
-        return self.load_graph()
+        return self.load_graph(), self.load_colorings()
 
     def load_graph(self):
         """
-        Load the data
-        :returns: graph 
+        Loads graph data from the data loader's archive
+        Graph filename must be specified in visinfo.cfg
+        :returns: graph
         """
         graph_name = self.parser.get('graphs', 'graph')
-        print graph_name
 
         # Get extension of graph file, which indicates storage format
         graph_ext = splitext( graph_name )[1]
-        print graph_ext
         # Get correct reader for graph's format, based on file extension
         graph_reader = self.get_graph_reader(graph_ext)
 
@@ -43,6 +42,27 @@ class ConcussDataLoader(DataLoader):
         with self.archive.open(graph_name, 'r') as graph_file:
             # Use correct reader to get and return NetworkX graph from graph file
             return graph_reader(graph_file)
+
+    def load_colorings(self):
+        """
+        Loads node color data from the data loader's archive
+        coloring files must be under color/colorings/
+        :returns: list of colorings, where each coloring is list of RBG tuples
+        """
+        colorings = []
+        for f in self.archive.namelist():
+            if 'color/colorings/' in f and 'color/colorings/' != f:
+                coloring = []
+                with self.archive.open(f) as coloring_file:
+                    for line in coloring_file:
+                        line = line.strip()
+                        if ':' not in line:
+                            continue
+                        node, color = line.split(':')
+                        coloring.append(int(color))
+                colorings.append(coloring)
+        return colorings
+
 
     def get_graph_reader(self, ext):
         """

@@ -27,11 +27,13 @@ class ColorInterface(StageInterface):
         # Forward button
         fwd_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD, wx.ART_TOOLBAR,
                 self.tb_size)
-        self.tb.AddLabelTool(wx.ID_FORWARD, "Forward", fwd_bmp)
+        fwd = self.tb.AddLabelTool(wx.ID_FORWARD, "Forward", fwd_bmp)
+        self.Bind(wx.EVT_TOOL, self.on_forward, fwd)
         # Backward button
         back_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_BACK, wx.ART_TOOLBAR,
                 self.tb_size)
-        self.tb.AddLabelTool(wx.ID_BACKWARD, "Backward", back_bmp)
+        back = self.tb.AddLabelTool(wx.ID_BACKWARD, "Backward", back_bmp)
+        self.Bind(wx.EVT_TOOL, self.on_backward, back)
 
         self.tb.AddSeparator()
 
@@ -45,6 +47,20 @@ class ColorInterface(StageInterface):
 
         vis = ColorVisualizer(self)
         self.set_visualization(vis)
+
+    def on_forward(self, e):
+        """Generate a new random graph layout"""
+        if self.vis.coloring_index < len(self.vis.colorings) - 1:
+            self.vis.coloring_index += 1
+            self.vis.graph_coloring()
+            self.vis.figure.canvas.draw()
+
+    def on_backward(self, e):
+        """Generate a new random graph layout"""
+        if self.vis.coloring_index > 0:
+            self.vis.coloring_index -= 1
+            self.vis.graph_coloring()
+            self.vis.figure.canvas.draw()
 
     def on_random(self, e):
         """Generate a new random graph layout"""
@@ -110,9 +126,14 @@ class ColorVisualizer(StageVisualizer):
     def set_graph(self, graph):
         """Set the graph to display"""
         self.graph = graph
+        self.coloring_index = 0
         self.graph_layout(0)
 
         self.zoomer = self.zoom_factory(self.axes, base_scale=1.5)
+
+    def set_colorings(self, colorings):
+        """Set node colors to display"""
+        self.colorings = colorings
 
     def graph_layout(self, seed=None):
         """Compute a layout of the graph, with an optional seed"""
@@ -120,7 +141,16 @@ class ColorVisualizer(StageVisualizer):
             random.seed(seed)
         self.layout = nx.spring_layout(self.graph)
         self.axes.clear()
-        nx.draw_networkx(self.graph, self.layout, ax=self.axes, with_labels=False)
+        nx.draw_networkx(self.graph, self.layout, ax=self.axes,
+                         node_color=self.colorings[self.coloring_index],
+                         with_labels=False)
+
+    def graph_coloring(self):
+        """Compute a layout of the graph, with an optional seed"""
+        self.axes.clear()
+        nx.draw_networkx(self.graph, self.layout, ax=self.axes,
+                         node_color=self.colorings[self.coloring_index],
+                         with_labels=False)
 
     def zoom_factory(self, ax, base_scale=2.):
         """
