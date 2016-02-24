@@ -4,6 +4,7 @@ import ConfigParser
 from os.path import basename, exists
 from importlib import import_module
 
+
 class DataLoader(object):
     """ Abstract Data Loader """
     __metaclass__ = ABCMeta
@@ -22,6 +23,7 @@ class DataLoader(object):
         Load data from self.archive
         """
 
+
 class DataLoaderFactory(object):
     """ Class that instantiates DataLoader objects """
 
@@ -35,7 +37,6 @@ class DataLoaderFactory(object):
         with ZipFile(filename, 'r') as archive:
             dl = self.data_loader(archive)
             return dl.load()
-
 
     def data_loader(self, archive):
         """
@@ -59,6 +60,7 @@ class DataLoaderFactory(object):
         # Create and return DataLoader object for the given pipeline
         pipe_factory = pipe_loader.Factory()
         return pipe_factory.create(archive, parser)
+
 
 class UnknownPipelineError(Exception):
     """
