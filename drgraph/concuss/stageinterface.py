@@ -141,8 +141,12 @@ class ColorVisualizer(StageVisualizer):
             random.seed(seed)
         self.layout = nx.spring_layout(self.graph)
         self.axes.clear()
+        if self.colorings:
+            node_color = self.colorings[self.coloring_index]
+        else:
+            node_color = None
         nx.draw_networkx(self.graph, self.layout, ax=self.axes,
-                         node_color=self.colorings[self.coloring_index],
+                         node_color=node_color,
                          with_labels=False)
 
     def graph_coloring(self):
