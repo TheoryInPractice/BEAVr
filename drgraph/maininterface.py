@@ -20,7 +20,7 @@ class MainInterface(wx.Frame):
 
     doc_url = 'https://github.ncsu.edu/engr-csc-sdc/2016springTeam09/wiki'
 
-    def __init__(self, parent):
+    def __init__(self, parent, filename=None):
         """Create the main window and all its GUI elements"""
         super(MainInterface, self).__init__(parent, title="Visualization Tool")
 
@@ -35,6 +35,9 @@ class MainInterface(wx.Frame):
         self.add_tab(dummy)
 
         self._restore_geometry()
+
+        if filename is not None:
+            self.load_file(filename)
 
     def _make_menubar(self):
         """Create, populate, and show the menubar"""
@@ -119,23 +122,7 @@ class MainInterface(wx.Frame):
 
         # Show the dialog and open the file if the user selected one
         if dlg.ShowModal() == wx.ID_OK:
-            dlf = DataLoaderFactory()
-            try:
-                graph, colorings = dlf.load_data(dlg.GetPath())
-            except (KeyError, BadZipfile) as e:
-                e_dlg = wx.MessageDialog(None, 'File does not contain valid ' +
-                                         'visualization data', 'Error',
-                                         wx.ICON_ERROR)
-                e_dlg.ShowModal()
-            except UnknownPipelineError as e:
-                e_dlg = wx.MessageDialog(None, e.msg, 'Error', wx.ICON_ERROR)
-                e_dlg.ShowModal()
-            else:
-                colorStage = ColorInterface(self.notebook)
-                self.remove_all_tabs()
-                self.add_tab(colorStage)
-                colorStage.vis.set_colorings(colorings)
-                colorStage.vis.set_graph(graph)
+            self.load_file(dlg.GetPath())
 
         # Destroy the dialog
         dlg.Destroy()
@@ -143,6 +130,25 @@ class MainInterface(wx.Frame):
         # At this point, we might be using several extra megabytes of RAM, so
         # run garbage collection to clean up unused objects.
         gc.collect()
+
+    def load_file(self, filename):
+        dlf = DataLoaderFactory()
+        try:
+            graph, colorings = dlf.load_data(filename)
+        except (KeyError, BadZipfile) as e:
+            e_dlg = wx.MessageDialog(None, 'File does not contain valid ' +
+                                     'visualization data', 'Error',
+                                     wx.ICON_ERROR)
+            e_dlg.ShowModal()
+        except UnknownPipelineError as e:
+            e_dlg = wx.MessageDialog(None, e.msg, 'Error', wx.ICON_ERROR)
+            e_dlg.ShowModal()
+        else:
+            colorStage = ColorInterface(self.notebook)
+            self.remove_all_tabs()
+            self.add_tab(colorStage)
+            colorStage.vis.set_colorings(colorings)
+            colorStage.vis.set_graph(graph)
 
     def OnQuit(self, e):
         """Quit the application"""
