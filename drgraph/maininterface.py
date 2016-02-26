@@ -56,7 +56,8 @@ class MainInterface(wx.Frame):
         # Load visualization submenu
         visualMenu = wx.Menu()
         preferencesMenu = wx.Menu()
-        preferencesMenu.AppendCheckItem(wx.NewId(), "Color-Blind Mode")
+        cb = preferencesMenu.AppendCheckItem(wx.NewId(), "Color-Blind Mode")
+        self.Bind(wx.EVT_MENU, self.OnColorBlind, cb)
         visualMenu.AppendMenu(wx.NewId(), 'Preferences', preferencesMenu)
         menubar.Append(visualMenu, '&Visuals')
 
@@ -134,7 +135,7 @@ class MainInterface(wx.Frame):
     def load_file(self, filename):
         dlf = DataLoaderFactory()
         try:
-            graph, colorings = dlf.load_data(filename)
+            dl = dlf.load_data(filename)
         except (KeyError, BadZipfile) as e:
             e_dlg = wx.MessageDialog(None, 'File does not contain valid ' +
                                      'visualization data', 'Error',
@@ -147,8 +148,7 @@ class MainInterface(wx.Frame):
             colorStage = ColorInterface(self.notebook)
             self.remove_all_tabs()
             self.add_tab(colorStage)
-            colorStage.vis.set_colorings(colorings)
-            colorStage.vis.set_graph(graph)
+            colorStage.vis.set_graph(dl.graph, dl.colorings)
 
     def OnQuit(self, e):
         """Quit the application"""
@@ -157,6 +157,10 @@ class MainInterface(wx.Frame):
     def OnDoc(self, e):
         """Open the online documentation"""
         webbrowser.open(self.doc_url, new=2)
+
+    def OnColorBlind(self, e):
+        """Switch to color-blind palette"""
+        # TODO: This may be tricky... need to update palette for all tabs...
 
     def OnAbout(self, e):
         """Show an about box"""

@@ -29,6 +29,7 @@ class ColorInterface(StageInterface):
                 self.tb_size)
         fwd = self.tb.AddLabelTool(wx.ID_FORWARD, "Forward", fwd_bmp)
         self.Bind(wx.EVT_TOOL, self.on_forward, fwd)
+
         # Backward button
         back_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_BACK, wx.ART_TOOLBAR,
                 self.tb_size)
@@ -51,37 +52,20 @@ class ColorInterface(StageInterface):
     def on_forward(self, e):
         """Generate a new random graph layout"""
         if self.vis.coloring_index < len(self.vis.colorings) - 1:
-            # Save axis limits
-            xlim = self.vis.axes.get_xlim()
-            ylim = self.vis.axes.get_ylim()
-            # Advance a step
             self.vis.coloring_index += 1
-            self.vis.graph_coloring()
-            # Restore axis limits
-            self.vis.axes.set_xlim(xlim)
-            self.vis.axes.set_ylim(ylim)
-            # Draw the graph
-            self.vis.figure.canvas.draw()
-
+            self.vis.update_graph_display()
+            
     def on_backward(self, e):
         """Generate a new random graph layout"""
         if self.vis.coloring_index > 0:
-            # Save axis limits
-            xlim = self.vis.axes.get_xlim()
-            ylim = self.vis.axes.get_ylim()
-            # Go back a step
             self.vis.coloring_index -= 1
-            self.vis.graph_coloring()
-            # Restore axis limits
-            self.vis.axes.set_xlim(xlim)
-            self.vis.axes.set_ylim(ylim)
-            # Draw the graph
-            self.vis.figure.canvas.draw()
+            self.vis.update_graph_display()
 
     def on_random(self, e):
         """Generate a new random graph layout"""
         self.vis.graph_layout()
-        self.vis.figure.canvas.draw()
+        self.vis.update_graph_display()
+
 
 class DecomposeInterface(StageInterface):
     """GUI elements for CONCUSS decomposition stage visualization"""
@@ -92,6 +76,7 @@ class DecomposeInterface(StageInterface):
         """Fill the empty GUI elements with decomposition-specific widgets"""
         super(DecomposeInterface, self).__init__(parent)
 
+
 class CountInterface(StageInterface):
     """GUI elements for CONCUSS counting stage visualization"""
 
@@ -101,6 +86,7 @@ class CountInterface(StageInterface):
         """Fill the empty GUI elements with counting-specific widgets"""
         super(CountInterface, self).__init__(parent)
 
+
 class CombineInterface(StageInterface):
     """GUI elements for CONCUSS combination stage visualization"""
 
@@ -109,6 +95,7 @@ class CombineInterface(StageInterface):
     def __init__(self, parent):
         """Fill the empty GUI elements with combination-specific widgets"""
         super(CombineInterface, self).__init__(parent)
+
 
 class ColorVisualizer(StageVisualizer):
     """The visualization for the CONCUSS coloring stage"""
@@ -139,38 +126,52 @@ class ColorVisualizer(StageVisualizer):
 
         self.Fit()
 
-    def set_graph(self, graph):
+    def set_graph(self, graph, colorings, palette='brewer'):
         """Set the graph to display"""
-        self.graph = graph
         self.coloring_index = 0
-        self.graph_layout(0)
-
         self.zoomer = self.zoom_factory(self.axes, base_scale=1.5)
 
-    def set_colorings(self, colorings):
-        """Set node colors to display"""
+        self.graph = graph
+        self.palette = palette
         self.colorings = colorings
+        self.map_colorings()
+        self.graph_layout(0)
 
-    def graph_layout(self, seed=None):
+        self.update_graph_display()
+
+    def map_colorings(self):
+        """Load colors from palette, map colorings to palette colors"""
+        colors = []
+        with open('data/palettes/'+self.palette) as palette_file:
+            for line in palette_file:
+                line = line.strip()
+                if '#' not in line and ',' in line:
+                    colors.append([int(c)/255.0 for c in line.split(',')])
+        if len(self.colorings) == 1:
+            self.mapped_colorings = [colors[self.colorings[0]]]
+        else:
+            mapped_colorings = []
+            for coloring in self.colorings:
+                mapped_coloring = []
+                for color in coloring:
+                    mapped_coloring.append(colors[color%len(colors)])
+                mapped_colorings.append(mapped_coloring)
+            self.mapped_colorings = mapped_colorings
+
+    def graph_layout(self, seed=None): # done
         """Compute a layout of the graph, with an optional seed"""
         if seed is not None:
             random.seed(seed)
         self.layout = nx.spring_layout(self.graph)
-        self.axes.clear()
-        if self.colorings:
-            node_color = self.colorings[self.coloring_index]
-        else:
-            node_color = None
-        nx.draw_networkx(self.graph, self.layout, ax=self.axes,
-                         node_color=node_color,
-                         with_labels=False)
 
-    def graph_coloring(self):
+    def update_graph_display(self): # done
         """Compute a layout of the graph, with an optional seed"""
         self.axes.clear()
+        self.axes.set_axis_bgcolor((.5,.5,.5))
         nx.draw_networkx(self.graph, self.layout, ax=self.axes,
-                         node_color=self.colorings[self.coloring_index],
+                         node_color=self.mapped_colorings[self.coloring_index],
                          with_labels=False)
+        self.figure.canvas.draw()
 
     def zoom_factory(self, ax, base_scale=2.):
         """

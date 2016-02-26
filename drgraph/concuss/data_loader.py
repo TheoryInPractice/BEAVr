@@ -21,9 +21,10 @@ class ConcussDataLoader(DataLoader):
     def load(self):
         """
         Load data from self.archive
-        :returns: graph and colorings
+        :returns: loads and stores graph and colorings
         """
-        return self.load_graph(), self.load_colorings()
+        self.graph = self.load_graph()
+        self.colorings = self.load_colorings()
 
     def load_graph(self):
         """
@@ -61,8 +62,9 @@ class ConcussDataLoader(DataLoader):
                         node, color = line.split(':')
                         coloring.append(int(color))
                 colorings.append(coloring)
+        if len(colorings) == 0:
+            colorings = [0]
         return colorings
-
 
     def get_graph_reader(self, ext):
         """

@@ -36,7 +36,8 @@ class DataLoaderFactory(object):
         # Open zip archive as ZipFile object
         with ZipFile(filename, 'r') as archive:
             dl = self.data_loader(archive)
-            return dl.load()
+            dl.load()
+            return dl
 
     def data_loader(self, archive):
         """
