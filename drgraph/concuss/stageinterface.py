@@ -51,15 +51,31 @@ class ColorInterface(StageInterface):
     def on_forward(self, e):
         """Generate a new random graph layout"""
         if self.vis.coloring_index < len(self.vis.colorings) - 1:
+            # Save axis limits
+            xlim = self.vis.axes.get_xlim()
+            ylim = self.vis.axes.get_ylim()
+            # Advance a step
             self.vis.coloring_index += 1
             self.vis.graph_coloring()
+            # Restore axis limits
+            self.vis.axes.set_xlim(xlim)
+            self.vis.axes.set_ylim(ylim)
+            # Draw the graph
             self.vis.figure.canvas.draw()
 
     def on_backward(self, e):
         """Generate a new random graph layout"""
         if self.vis.coloring_index > 0:
+            # Save axis limits
+            xlim = self.vis.axes.get_xlim()
+            ylim = self.vis.axes.get_ylim()
+            # Go back a step
             self.vis.coloring_index -= 1
             self.vis.graph_coloring()
+            # Restore axis limits
+            self.vis.axes.set_xlim(xlim)
+            self.vis.axes.set_ylim(ylim)
+            # Draw the graph
             self.vis.figure.canvas.draw()
 
     def on_random(self, e):
