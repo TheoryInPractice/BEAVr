@@ -52,8 +52,12 @@ class ConcussDataLoader(DataLoader):
         :returns: list of colorings, where each coloring is list of RBG tuples
         """
         colorings = []
-        for f in self.archive.namelist():
+        files = self.archive.namelist()
+        files.sort()
+        nodes = 0
+        for f in files:
             if 'color/colorings/' == f[:16] and 'color/colorings/' != f:
+                print f
                 coloring = []
                 with self.archive.open(f) as coloring_file:
                     for line in coloring_file:
@@ -61,7 +65,11 @@ class ConcussDataLoader(DataLoader):
                         if ':' not in line:
                             continue
                         node, color = line.split(':')
-                        coloring.append(int(color))
+                        node = int(node)
+                        color = int(color)
+                        while len(coloring) <= node:
+                            coloring.append(0)
+                        coloring[node] = color
                 colorings.append(coloring)
         if len(colorings) == 0:
             colorings = [0]
