@@ -167,7 +167,7 @@ class ColorVisualizer(StageVisualizer):
     def update_graph_display(self): # done
         """Compute a layout of the graph, with an optional seed"""
         self.axes.clear()
-        self.axes.set_axis_bgcolor((.5,.5,.5))
+        self.axes.set_axis_bgcolor((.8,.8,.8))
         nx.draw_networkx(self.graph, self.layout, ax=self.axes,
                          node_color=self.mapped_colorings[self.coloring_index],
                          with_labels=False)
