@@ -168,7 +168,19 @@ class ColorVisualizer(StageVisualizer):
         # Add enough room for the color boxes
         color_box_size = legend_height - 2 * margin
         color_box_x = legend_width
+        color_box_y = margin
+        safe_legend_width = legend_width
         legend_width += (color_box_size + margin) * abs(color_delta)
+        # The color boxes can be very numerous; wrap if necessary
+        try:
+            size = dc.GetSize()
+        except wx._core.PyAssertionError:
+            # This happens on startup before the window is drawn, because it
+            # has no size yet.  Set a fake size to make the rest of the code
+            # here happy
+            size = (1, 1)
+        legend_height += (color_box_size + margin) * (legend_width // size[0])
+        legend_width = min(legend_width, size[0] - 1)
 
         # Draw a background for the legend
         dc.SetPen(wx.Pen(wx.BLACK, 2))
@@ -176,15 +188,19 @@ class ColorVisualizer(StageVisualizer):
 
         # Draw contents of the legend
         dc.DrawText(step_label, margin, margin)
-        dc.DrawLine(separator_x, 10, separator_x, legend_height - 10)
+        dc.DrawLine(separator_x, 10, separator_x, color_box_size + 2*margin - 10)
         dc.DrawText(color_label, separator_x + margin, margin)
         for color in color_set ^ previous_color_set:
             rgb = [int(channel * 255) for channel in
                     self.color_palette[color%len(self.color_palette)]]
             dc.SetBrush(wx.Brush(wx.Colour(rgb[0], rgb[1], rgb[2])))
-            dc.DrawRectangle(color_box_x, margin, color_box_size,
+            dc.DrawRectangle(color_box_x, color_box_y, color_box_size,
                     color_box_size)
             color_box_x += color_box_size + margin
+            # If we've gone too wide, wrap
+            if color_box_x + color_box_size > size[0]:
+                color_box_x = margin
+                color_box_y += color_box_size + margin
 
     def set_graph(self, graph, colorings, palette='brewer'):
         """Set the graph to display"""
