@@ -126,6 +126,16 @@ class ColorVisualizer(StageVisualizer):
 
         self.Fit()
 
+        self.canvas.Bind(wx.EVT_PAINT, self.on_paint)
+
+    def on_paint(self, evt):
+        """Draw a legend in the top-left corner of the graph display"""
+        dc = wx.PaintDC(self.canvas)
+        self.canvas.draw(dc)
+        dc.SetPen(wx.Pen(wx.BLACK, 4))
+        dc.DrawLine(0, 50, 100, 50)
+        dc.DrawLine(100, 50, 100, 0)
+
     def set_graph(self, graph, colorings, palette='brewer'):
         """Set the graph to display"""
         self.coloring_index = 0
@@ -204,7 +214,8 @@ class ColorVisualizer(StageVisualizer):
             ax.set_ylim([ydata - (ydata - cur_ylim[0])*scale_factor,
                          ydata + (cur_ylim[1] - ydata)*scale_factor])
             # Force redraw
-            self.figure.canvas.draw()
+            event = wx.PyCommandEvent(wx.EVT_PAINT.typeId, self.GetId())
+            wx.PostEvent(self.canvas.GetEventHandler(), event)
 
         # Get the figure of interest
         fig = ax.get_figure()
