@@ -64,7 +64,7 @@ class ColorInterface(StageInterface):
     def on_random(self, e):
         """Generate a new random graph layout"""
         self.vis.graph_layout()
-        self.vis.update_graph_display()
+        self.vis.update_graph_display(reset_zoom=True)
 
 
 class DecomposeInterface(StageInterface):
@@ -147,7 +147,7 @@ class ColorVisualizer(StageVisualizer):
         self.map_colorings()
         self.graph_layout(0)
 
-        self.update_graph_display()
+        self.update_graph_display(reset_zoom=True)
 
     def map_colorings(self):
         """Load colors from palette, map colorings to palette colors"""
@@ -168,20 +168,29 @@ class ColorVisualizer(StageVisualizer):
                 mapped_colorings.append(mapped_coloring)
             self.mapped_colorings = mapped_colorings
 
-    def graph_layout(self, seed=None): # done
+    def graph_layout(self, seed=None):
         """Compute a layout of the graph, with an optional seed"""
         if seed is not None:
             random.seed(seed)
         self.layout = nx.spring_layout(self.graph)
 
-    def update_graph_display(self): # done
+    def update_graph_display(self, reset_zoom=False):
         """Compute a layout of the graph, with an optional seed"""
+        # Save zoom level, etc.
+        if not reset_zoom:
+            cur_xlim = self.axes.get_xlim()
+            cur_ylim = self.axes.get_ylim()
         self.axes.clear()
+        # Restore zoom level, etc.
+        if not reset_zoom:
+            self.axes.set_xlim(cur_xlim)
+            self.axes.set_ylim(cur_ylim)
         self.axes.set_axis_bgcolor((.8,.8,.8))
         nx.draw_networkx(self.graph, self.layout, ax=self.axes,
                          node_color=self.mapped_colorings[self.coloring_index],
                          with_labels=False)
-        self.figure.canvas.draw()
+        event = wx.PyCommandEvent(wx.EVT_PAINT.typeId, self.GetId())
+        wx.PostEvent(self.canvas.GetEventHandler(), event)
 
     def zoom_factory(self, ax, base_scale=2.):
         """
