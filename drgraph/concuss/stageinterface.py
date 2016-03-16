@@ -170,7 +170,7 @@ class ColorVisualizer(StageVisualizer):
         self.axes.set_axis_bgcolor((.8,.8,.8))
         nx.draw_networkx(self.graph, self.layout, ax=self.axes,
                          node_color=self.mapped_colorings[self.coloring_index],
-                         with_labels=False)
+                         with_labels=True)
         self.figure.canvas.draw()
 
     def zoom_factory(self, ax, base_scale=2.):
