@@ -179,7 +179,8 @@ class ColorVisualizer(StageVisualizer):
         dc.DrawLine(separator_x, 10, separator_x, legend_height - 10)
         dc.DrawText(color_label, separator_x + margin, margin)
         for color in color_set ^ previous_color_set:
-            rgb = [int(channel * 255) for channel in self.color_palette[color]]
+            rgb = [int(channel * 255) for channel in
+                    self.color_palette[color%len(self.color_palette)]]
             dc.SetBrush(wx.Brush(wx.Colour(rgb[0], rgb[1], rgb[2])))
             dc.DrawRectangle(color_box_x, margin, color_box_size,
                     color_box_size)
