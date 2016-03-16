@@ -131,10 +131,59 @@ class ColorVisualizer(StageVisualizer):
     def on_paint(self, evt):
         """Draw a legend in the top-left corner of the graph display"""
         dc = wx.PaintDC(self.canvas)
+        # First, draw the graph with matplotlib
         self.canvas.draw(dc)
-        dc.SetPen(wx.Pen(wx.BLACK, 4))
-        dc.DrawLine(0, 50, 100, 50)
-        dc.DrawLine(100, 50, 100, 0)
+
+        # Calculate the size of the legend
+        legend_height = 40  # Should be big enough
+        legend_width = 0
+        # Text size
+        step_label = 'Step {0}'.format(self.coloring_index)
+        step_extents = self.GetFullTextExtent(step_label)
+        margin = (legend_height - step_extents[1]) / 2
+        # Add enough width for the text
+        legend_width += 2 * margin + step_extents[0]
+        separator_x = legend_width
+        legend_width += margin
+        # Add enough width for the colors
+        color_set = set(self.colorings[self.coloring_index])
+        if self.coloring_index > 0:
+            previous_color_set = set(self.colorings[self.coloring_index - 1])
+        else:
+            previous_color_set = set()
+        color_delta = len(color_set ^ previous_color_set)
+        if len(color_set) < len(previous_color_set):
+            color_delta *= -1
+        if self.coloring_index > 0 and color_delta > 0:
+            color_label = 'Added colors:'
+        elif self.coloring_index > 0 and color_delta < 0:
+            color_label = 'Removed colors:'
+        elif self.coloring_index == 0:
+            color_label = 'Initial colors:'
+        else:
+            color_label = 'No change in colors'
+        color_extents = self.GetFullTextExtent(color_label)
+        # Add enough room for the color label
+        legend_width += color_extents[0] + margin
+        # Add enough room for the color boxes
+        color_box_size = legend_height - 2 * margin
+        color_box_x = legend_width
+        legend_width += (color_box_size + margin) * abs(color_delta)
+
+        # Draw a background for the legend
+        dc.SetPen(wx.Pen(wx.BLACK, 2))
+        dc.DrawRectangle(1, 1, legend_width, legend_height)
+
+        # Draw contents of the legend
+        dc.DrawText(step_label, margin, margin)
+        dc.DrawLine(separator_x, 10, separator_x, legend_height - 10)
+        dc.DrawText(color_label, separator_x + margin, margin)
+        for color in color_set ^ previous_color_set:
+            rgb = [int(channel * 255) for channel in self.color_palette[color]]
+            dc.SetBrush(wx.Brush(wx.Colour(rgb[0], rgb[1], rgb[2])))
+            dc.DrawRectangle(color_box_x, margin, color_box_size,
+                    color_box_size)
+            color_box_x += color_box_size + margin
 
     def set_graph(self, graph, colorings, palette='brewer'):
         """Set the graph to display"""
@@ -151,20 +200,21 @@ class ColorVisualizer(StageVisualizer):
 
     def map_colorings(self):
         """Load colors from palette, map colorings to palette colors"""
-        colors = []
+        self.color_palette = []
         with open('data/palettes/'+self.palette) as palette_file:
             for line in palette_file:
                 line = line.strip()
                 if '#' not in line and ',' in line:
-                    colors.append([int(c)/255.0 for c in line.split(',')])
+                    self.color_palette.append(
+                            [int(c)/255.0 for c in line.split(',')])
         if len(self.colorings) == 1:
-            self.mapped_colorings = [colors[self.colorings[0]]]
+            self.mapped_colorings = [self.color_palette[self.colorings[0]]]
         else:
             mapped_colorings = []
             for coloring in self.colorings:
                 mapped_coloring = []
                 for color in coloring:
-                    mapped_coloring.append(colors[color%len(colors)])
+                    mapped_coloring.append(self.color_palette[color%len(self.color_palette)])
                 mapped_colorings.append(mapped_coloring)
             self.mapped_colorings = mapped_colorings
 
@@ -189,6 +239,7 @@ class ColorVisualizer(StageVisualizer):
         nx.draw_networkx(self.graph, self.layout, ax=self.axes,
                          node_color=self.mapped_colorings[self.coloring_index],
                          with_labels=False)
+        # Redraw
         event = wx.PyCommandEvent(wx.EVT_PAINT.typeId, self.GetId())
         wx.PostEvent(self.canvas.GetEventHandler(), event)
 
