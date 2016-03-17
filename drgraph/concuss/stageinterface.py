@@ -64,7 +64,7 @@ class ColorInterface(StageInterface):
     def on_random(self, e):
         """Generate a new random graph layout"""
         self.vis.graph_layout()
-        self.vis.update_graph_display()
+        self.vis.update_graph_display(reset_zoom=True)
 
 
 class DecomposeInterface(StageInterface):
@@ -157,6 +157,82 @@ class ColorVisualizer(StageVisualizer):
 
         self.Fit()
 
+        self.canvas.Bind(wx.EVT_PAINT, self.on_paint)
+
+    def on_paint(self, evt):
+        """Draw a legend in the top-left corner of the graph display"""
+        dc = wx.PaintDC(self.canvas)
+        # First, draw the graph with matplotlib
+        self.canvas.draw(dc)
+
+        # Calculate the size of the legend
+        legend_height = 40  # Should be big enough
+        legend_width = 0
+        # Text size
+        step_label = 'Step {0}'.format(self.coloring_index)
+        step_extents = self.GetFullTextExtent(step_label)
+        margin = (legend_height - step_extents[1]) / 2
+        # Add enough width for the text
+        legend_width += 2 * margin + step_extents[0]
+        separator_x = legend_width
+        legend_width += margin
+        # Add enough width for the colors
+        color_set = set(self.colorings[self.coloring_index])
+        if self.coloring_index > 0:
+            previous_color_set = set(self.colorings[self.coloring_index - 1])
+        else:
+            previous_color_set = set()
+        color_delta = len(color_set ^ previous_color_set)
+        if len(color_set) < len(previous_color_set):
+            color_delta *= -1
+        if self.coloring_index > 0 and color_delta > 0:
+            color_label = 'Added colors:'
+        elif self.coloring_index > 0 and color_delta < 0:
+            color_label = 'Removed colors:'
+        elif self.coloring_index == 0:
+            color_label = 'Initial colors:'
+        else:
+            color_label = 'No change in colors'
+        color_extents = self.GetFullTextExtent(color_label)
+        # Add enough room for the color label
+        legend_width += color_extents[0] + margin
+        # Add enough room for the color boxes
+        color_box_size = legend_height - 2 * margin
+        color_box_x = legend_width
+        color_box_y = margin
+        safe_legend_width = legend_width
+        legend_width += (color_box_size + margin) * abs(color_delta)
+        # The color boxes can be very numerous; wrap if necessary
+        try:
+            size = dc.GetSize()
+        except wx._core.PyAssertionError:
+            # This happens on startup before the window is drawn, because it
+            # has no size yet.  Set a fake size to make the rest of the code
+            # here happy
+            size = (1, 1)
+        legend_height += (color_box_size + margin) * (legend_width // size[0])
+        legend_width = min(legend_width, size[0] - 1)
+
+        # Draw a background for the legend
+        dc.SetPen(wx.Pen(wx.BLACK, 2))
+        dc.DrawRectangle(1, 1, legend_width, legend_height)
+
+        # Draw contents of the legend
+        dc.DrawText(step_label, margin, margin)
+        dc.DrawLine(separator_x, 10, separator_x, color_box_size + 2*margin - 10)
+        dc.DrawText(color_label, separator_x + margin, margin)
+        for color in color_set ^ previous_color_set:
+            rgb = [int(channel * 255) for channel in
+                    self.color_palette[color%len(self.color_palette)]]
+            dc.SetBrush(wx.Brush(wx.Colour(rgb[0], rgb[1], rgb[2])))
+            dc.DrawRectangle(color_box_x, color_box_y, color_box_size,
+                    color_box_size)
+            color_box_x += color_box_size + margin
+            # If we've gone too wide, wrap
+            if color_box_x + color_box_size > size[0]:
+                color_box_x = margin
+                color_box_y += color_box_size + margin
+
     def set_graph(self, graph, colorings, palette='brewer'):
         """Set the graph to display"""
         self.coloring_index = 0
@@ -168,41 +244,52 @@ class ColorVisualizer(StageVisualizer):
         self.map_colorings()
         self.graph_layout(0)
 
-        self.update_graph_display()
+        self.update_graph_display(reset_zoom=True)
 
     def map_colorings(self):
         """Load colors from palette, map colorings to palette colors"""
-        colors = []
+        self.color_palette = []
         with open('data/palettes/'+self.palette) as palette_file:
             for line in palette_file:
                 line = line.strip()
                 if '#' not in line and ',' in line:
-                    colors.append([int(c)/255.0 for c in line.split(',')])
+                    self.color_palette.append(
+                            [int(c)/255.0 for c in line.split(',')])
         if len(self.colorings) == 1:
-            self.mapped_colorings = [colors[self.colorings[0]]]
+            self.mapped_colorings = [self.color_palette[self.colorings[0]]]
         else:
             mapped_colorings = []
             for coloring in self.colorings:
                 mapped_coloring = []
                 for color in coloring:
-                    mapped_coloring.append(colors[color%len(colors)])
+                    mapped_coloring.append(self.color_palette[color%len(self.color_palette)])
                 mapped_colorings.append(mapped_coloring)
             self.mapped_colorings = mapped_colorings
 
-    def graph_layout(self, seed=None): # done
+    def graph_layout(self, seed=None):
         """Compute a layout of the graph, with an optional seed"""
         if seed is not None:
             random.seed(seed)
         self.layout = nx.spring_layout(self.graph)
 
-    def update_graph_display(self): # done
+    def update_graph_display(self, reset_zoom=False):
         """Compute a layout of the graph, with an optional seed"""
+        # Save zoom level, etc.
+        if not reset_zoom:
+            cur_xlim = self.axes.get_xlim()
+            cur_ylim = self.axes.get_ylim()
         self.axes.clear()
+        # Restore zoom level, etc.
+        if not reset_zoom:
+            self.axes.set_xlim(cur_xlim)
+            self.axes.set_ylim(cur_ylim)
         self.axes.set_axis_bgcolor((.8,.8,.8))
         nx.draw_networkx(self.graph, self.layout, ax=self.axes,
                          node_color=self.mapped_colorings[self.coloring_index],
                          with_labels=False)
-        self.figure.canvas.draw()
+        # Redraw
+        event = wx.PyCommandEvent(wx.EVT_PAINT.typeId, self.GetId())
+        wx.PostEvent(self.canvas.GetEventHandler(), event)
 
     def zoom_factory(self, ax, base_scale=2.):
         """
@@ -235,7 +322,8 @@ class ColorVisualizer(StageVisualizer):
             ax.set_ylim([ydata - (ydata - cur_ylim[0])*scale_factor,
                          ydata + (cur_ylim[1] - ydata)*scale_factor])
             # Force redraw
-            self.figure.canvas.draw()
+            event = wx.PyCommandEvent(wx.EVT_PAINT.typeId, self.GetId())
+            wx.PostEvent(self.canvas.GetEventHandler(), event)
 
         # Get the figure of interest
         fig = ax.get_figure()
