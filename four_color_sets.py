@@ -2,12 +2,15 @@
 # four_color_sets.py - Take a set of colors $C$ and an integer $p$ and return
 # four reasonable subsets of $C$ of size $p$.
 
+from numpy import random
+
 
 def four_color_sets(C, p):
     # We want at least a few extra colors
     assert p <= len(C) - 3, 'p too large for C'
-    # Sort C, make an empty set for our output
-    Cs = sorted(C)
+    # Randomly permute C
+    Cs = random.permutation(sorted(C)).tolist()
+    # Make an empty set for our output
     sets = set()
     # If we have a lot of colors, do something nice
     if 2 * p + 1 <= len(C):
@@ -35,5 +38,8 @@ def four_color_sets(C, p):
 if __name__ == '__main__':
     C = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
     p = 6
+    # Seed np's RNG
+    random.seed(0)
+    # Print some sets
     for s in four_color_sets(C, p):
         print s
