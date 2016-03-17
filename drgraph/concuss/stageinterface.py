@@ -477,7 +477,7 @@ class DecomposeVisualizer(StageVisualizer):
         vertices = set()
 
         # Find vertices that are colored with colors in color_set
-        for index, color in enumerate(self.colorings[len(self.colorings) - 1]):
+        for index, color in enumerate(self.colorings[-1]):
             if color in color_set:
                 vertices.add(index)
 
