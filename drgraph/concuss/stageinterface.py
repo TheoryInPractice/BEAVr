@@ -587,3 +587,49 @@ class DecomposeVisualizer(StageVisualizer):
 
         # Return the function
         return zoom_fun
+
+    def get_connected_components(self, color_set):
+        """
+        An iterator for connected components given a specific color set
+
+        :param color_set: The color set
+        :return: An iterator for connected components (subgraphs) induced by
+                color_set
+        """
+
+        # Make an empty set to store vertices
+        vertices = set()
+
+        # Find vertices that are colored with colors in color_set
+        for index, color in enumerate(self.colorings[len(self.colorings) - 1]):
+            if color in color_set:
+                vertices.add(index)
+
+        # While we have more vertices to look at
+        while vertices:
+            # Pop a vertex at random and make a set containing that vertex
+            comp = {vertices.pop()}
+            # Find its neighbors that are also in 'vertices'
+            exp = self.neighbors_set(comp) & vertices
+            # While we have more neighbors
+            while exp:
+                # Add those vertices to our component
+                comp.update(exp)
+                # Compute new neighbors
+                exp = self.neighbors_set(comp) & vertices
+            # We found a component, delete those vertices from original
+            # set of vertices
+            vertices = vertices - comp
+            # Yield the component
+            yield self.graph.subgraph(comp)
+
+    def neighbors_set(self, centers):
+        """
+        Returns all neighbors given a set of vertices
+
+        :param centers: The vertices whose neighbors are sought
+        :return: A set containing the neighbors
+        """
+
+        res = reduce(lambda x, y: x | self.graph.neighbors(y), centers, set())
+        return res - centers
