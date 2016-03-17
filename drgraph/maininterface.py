@@ -4,8 +4,9 @@ import gc
 from zipfile import BadZipfile
 
 import wx
+import networkx as nx
 
-from drgraph.concuss.stageinterface import ColorInterface
+from drgraph.concuss.stageinterface import ColorInterface, DecomposeInterface
 from drgraph.stageinterface import DummyStageInterface
 from drgraph.data_loader import DataLoaderFactory, UnknownPipelineError
 
@@ -149,6 +150,21 @@ class MainInterface(wx.Frame):
             self.remove_all_tabs()
             self.add_tab(colorStage)
             colorStage.vis.set_graph(dl.graph, dl.colorings)
+            # Temporary: For open house 
+            decomposeStage = DecomposeInterface(self.notebook)
+            self.add_tab(decomposeStage)
+            graph = nx.Graph()
+            coloring = range(10)
+            graph.add_nodes_from(coloring)
+            graph.add_edge(1,2)
+            graph.add_edge(3,4)
+            graph.add_edge(4,5)
+            graph.add_edge(3,5)
+            graph.add_edge(6,7)
+            graph.add_edge(6,8)
+            graph.add_edge(6,9)
+            colorings = [coloring, [i * 2 for i in coloring]]
+            decomposeStage.vis.set_graph([graph,graph], colorings)
 
     def OnQuit(self, e):
         """Quit the application"""
