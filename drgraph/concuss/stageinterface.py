@@ -404,8 +404,12 @@ class DecomposeVisualizer(StageVisualizer):
         for cs in self.color_sets:
             self.components.append(self.get_connected_components(cs))
             self.layouts.append(self.get_tree_layouts(self.components[-1]))
-
-
+            print '\n\nColor set:', cs
+            print 'Mapped color set:', [self.color_palette[c] for c in cs]
+            for cc in self.components[-1]:
+                print '\nNodes:', cc.nodes()
+                print 'Edges:', cc.edges()
+                print 'Coloring:', [self.coloring[node] for node in cc.nodes()]
 
         self.update_graph_display()
 
@@ -447,11 +451,11 @@ class DecomposeVisualizer(StageVisualizer):
     def update_graph_display(self):
         self.axes.clear()
         self.axes.set_axis_bgcolor((.8,.8,.8))
-        for i in range(len(self.components[self.graph_index])):
-            comp_colors = [self.mapped_coloring[node] for node in self.components[self.graph_index][i].nodes()]
-            nx.draw_networkx(self.components[self.graph_index][i], self.layouts[self.graph_index][i], ax=self.axes,
-                             node_color=self.mapped_coloring,
-                             with_labels=False)
+        for cc, layout in zip(self.components[self.graph_index],
+                              self.layouts[self.graph_index]):
+            comp_colors = [self.mapped_coloring[node] for node in cc.nodes()]
+            nx.draw_networkx(cc, layout, ax=self.axes, node_color=comp_colors,
+                             with_labels=True)
         self.figure.canvas.draw()
 
     def zoom_factory(self, ax, base_scale=2.):
