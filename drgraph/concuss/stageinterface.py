@@ -76,17 +76,29 @@ class DecomposeInterface(StageInterface):
         """Fill the empty GUI elements with decomposition-specific widgets"""
         super(DecomposeInterface, self).__init__(parent)
 
-        # Forward button
-        fwd_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD, wx.ART_TOOLBAR,
+        # Set one button
+        one_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD, wx.ART_TOOLBAR,
                 self.tb_size)
-        fwd = self.tb.AddLabelTool(wx.ID_FORWARD, "Forward", fwd_bmp)
-        self.Bind(wx.EVT_TOOL, self.on_forward, fwd)
+        one = self.tb.AddLabelTool(wx.NewId(), "Forward", one_bmp)
+        self.Bind(wx.EVT_TOOL, self.on_one, one)
 
-        # Backward button
-        back_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_BACK, wx.ART_TOOLBAR,
+        # Set two button
+        two_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_BACK, wx.ART_TOOLBAR,
                 self.tb_size)
-        back = self.tb.AddLabelTool(wx.ID_BACKWARD, "Backward", back_bmp)
-        self.Bind(wx.EVT_TOOL, self.on_backward, back)
+        two = self.tb.AddLabelTool(wx.NewId(), "Backward", two_bmp)
+        self.Bind(wx.EVT_TOOL, self.on_two, two)
+
+        # Set three button
+        three_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_BACK, wx.ART_TOOLBAR,
+                self.tb_size)
+        three = self.tb.AddLabelTool(wx.NewId(), "Backward", three_bmp)
+        self.Bind(wx.EVT_TOOL, self.on_three, three)
+
+        # Set four button
+        four_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_BACK, wx.ART_TOOLBAR,
+                self.tb_size)
+        four = self.tb.AddLabelTool(wx.NewId(), "Backward", four_bmp)
+        self.Bind(wx.EVT_TOOL, self.on_four, four)
 
         self.tb.AddSeparator()
 
@@ -95,17 +107,25 @@ class DecomposeInterface(StageInterface):
         vis = DecomposeVisualizer(self)
         self.set_visualization(vis)
 
-    def on_forward(self, e):
-        """Generate a new random graph layout"""
-        if self.vis.graph_index < len(self.vis.graphs) - 1:
-            self.vis.graph_index += 1
-            self.vis.update_graph_display()
+    def on_one(self, e):
+        """Show the decompositions for color set one"""
+        self.vis.graph_index = 0
+        self.vis.update_graph_display()
             
-    def on_backward(self, e):
-        """Generate a new random graph layout"""
-        if self.vis.graph_index > 0:
-            self.vis.graph_index -= 1
-            self.vis.update_graph_display()
+    def on_two(self, e):
+        """Show the decompositions for color set two"""
+        self.vis.graph_index = 1
+        self.vis.update_graph_display()
+
+    def on_three(self, e):
+        """Show the decompositions for color set three"""
+        self.vis.graph_index = 2
+        self.vis.update_graph_display()
+
+    def on_four(self, e):
+        """Show the decompositions for color set four"""
+        self.vis.graph_index = 3
+        self.vis.update_graph_display()
 
 
 class CountInterface(StageInterface):
@@ -418,6 +438,7 @@ class DecomposeVisualizer(StageVisualizer):
         """Compute a layout of the graph, with an optional seed"""
         self.axes.clear()
         self.axes.set_axis_bgcolor((.8,.8,.8))
+        print self.graph_index, self.graphs
         nx.draw_networkx(self.graphs[self.graph_index], self.grid, ax=self.axes,
                          node_color=self.mapped_colorings[self.graph_index],
                          with_labels=False)
