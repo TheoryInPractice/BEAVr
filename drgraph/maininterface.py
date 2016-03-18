@@ -164,7 +164,7 @@ class MainInterface(wx.Frame):
             graph.add_edge(6,8)
             graph.add_edge(6,9)
             colorings = [coloring, [i * 2 for i in coloring]]
-            decomposeStage.vis.set_graph([graph,graph], colorings)
+            decomposeStage.vis.set_graph(dl.graph, [graph,graph], colorings)
 
     def OnQuit(self, e):
         """Quit the application"""
