@@ -72,9 +72,13 @@ class DecomposeInterface(StageInterface):
 
     name = "Decompose"
 
-    def __init__(self, parent):
+    def __init__(self, parent, graph, pattern, coloring):
         """Fill the empty GUI elements with decomposition-specific widgets"""
         super(DecomposeInterface, self).__init__(parent)
+
+        vis = DecomposeVisualizer(self)
+        self.set_visualization(vis)
+        self.vis.set_graph(graph, pattern, coloring)
 
         # Set one button
         one_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD, wx.ART_TOOLBAR,
@@ -100,12 +104,10 @@ class DecomposeInterface(StageInterface):
         four = self.tb.AddLabelTool(wx.NewId(), "Backward", four_bmp)
         self.Bind(wx.EVT_TOOL, self.on_four, four)
 
-        self.tb.AddSeparator()
+        # Not needed until we get something below it
+        #self.tb.AddSeparator()
 
         self.tb.Realize()
-
-        vis = DecomposeVisualizer(self)
-        self.set_visualization(vis)
 
     def on_one(self, e):
         """Show the decompositions for color set one"""
@@ -590,7 +592,7 @@ class DecomposeVisualizer(StageVisualizer):
 
         # Every new connected component is a subtree
         for sub_cc in nx.connected_component_subgraphs( connected_component ):
-            subtree = self.get_underlying_tree( sub_cc, coloring )
+            subtree = self.get_underlying_tree(sub_cc)
             tree = nx.compose( tree, subtree )
             tree.add_edge( root, subtree.root )
 

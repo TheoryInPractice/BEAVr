@@ -151,9 +151,10 @@ class MainInterface(wx.Frame):
             self.add_tab(colorStage)
             colorStage.vis.set_graph(dl.graph, dl.colorings)
             # Temporary: For open house 
-            decomposeStage = DecomposeInterface(self.notebook)
+            decomposeStage = DecomposeInterface(self.notebook, dl.graph,
+                    dl.pattern, dl.colorings[-1])
             self.add_tab(decomposeStage)
-            decomposeStage.vis.set_graph(dl.graph, dl.pattern, dl.colorings[-1])
+            #decomposeStage.vis.set_graph(dl.graph, dl.pattern, dl.colorings[-1])
 
     def OnQuit(self, e):
         """Quit the application"""
