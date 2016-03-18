@@ -153,18 +153,7 @@ class MainInterface(wx.Frame):
             # Temporary: For open house 
             decomposeStage = DecomposeInterface(self.notebook)
             self.add_tab(decomposeStage)
-            graph = nx.Graph()
-            coloring = range(10)
-            graph.add_nodes_from(coloring)
-            graph.add_edge(1,2)
-            graph.add_edge(3,4)
-            graph.add_edge(4,5)
-            graph.add_edge(3,5)
-            graph.add_edge(6,7)
-            graph.add_edge(6,8)
-            graph.add_edge(6,9)
-            colorings = [coloring, [i * 2 for i in coloring]]
-            decomposeStage.vis.set_graph(dl.graph, dl.pattern, [graph,graph], colorings)
+            decomposeStage.vis.set_graph(dl.graph, dl.pattern, dl.colorings[-1])
 
     def OnQuit(self, e):
         """Quit the application"""

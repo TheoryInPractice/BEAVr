@@ -306,7 +306,7 @@ class ColorVisualizer(StageVisualizer):
         self.axes.set_axis_bgcolor((.8,.8,.8))
         nx.draw_networkx(self.graph, self.layout, ax=self.axes,
                          node_color=self.mapped_colorings[self.coloring_index],
-                         with_labels=False)
+                         with_labels=True)
         # Redraw
         self.canvas.Refresh()
 
@@ -383,18 +383,25 @@ class DecomposeVisualizer(StageVisualizer):
 
         self.Fit()
 
-    def set_graph(self, graph, pattern, graphs, colorings, palette='brewer'):
+    def set_graph(self, graph, pattern, coloring, palette='brewer'):
         """Set the graph to display"""
         self.graph_index = 0
         self.zoomer = self.zoom_factory(self.axes, base_scale=1.5)
         self.pattern = pattern
 
         self.graph = graph
-        self.graphs = graphs
         self.palette = palette
-        self.colorings = colorings
+        self.coloring = coloring
         self.map_colorings()
-        self.graph_layout()
+
+        self.components = []
+        self.layouts = []
+        
+        self.color_sets = self.four_color_sets(set(self.coloring), len(pattern))
+
+        for cs in self.color_sets:
+            self.components.append(self.get_connected_components(cs))
+            self.layouts.append(self.get_tree_layouts(self.components[-1], self.coloring))
 
         self.update_graph_display()
 
@@ -407,22 +414,19 @@ class DecomposeVisualizer(StageVisualizer):
                 if '#' not in line and ',' in line:
                     self.color_palette.append(
                             [int(c)/255.0 for c in line.split(',')])
-        if len(self.colorings) == 1:
-            self.mapped_colorings = [self.color_palette[self.colorings[0]]]
+        if len(self.coloring) == 1:
+            self.mapped_coloring = [self.color_palette[self.coloring[0]]]
         else:
-            mapped_colorings = []
-            for coloring in self.colorings:
-                mapped_coloring = []
-                for color in coloring:
-                    mapped_coloring.append(self.color_palette[color%len(self.color_palette)])
-                mapped_colorings.append(mapped_coloring)
-            self.mapped_colorings = mapped_colorings
+            mapped_coloring = []
+            for color in self.coloring:
+                mapped_coloring.append(self.color_palette[color%len(self.color_palette)])
+            self.mapped_coloring = mapped_coloring
 
     def graph_layout(self):
         """Compute a layout of the graph, with an optional seed"""
         # Compute tree layouts for each connected component
         layouts = []
-        for sub in nx.connected_component_subgraphs(self.graphs[self.graph_index]):
+        for sub in nx.connected_component_subgraphs(self.graph):
             layouts.append(nx.circular_layout(sub))
         
         # Calculate offset
@@ -437,12 +441,13 @@ class DecomposeVisualizer(StageVisualizer):
                 y_offset += 10
 
     def update_graph_display(self):
-        """Compute a layout of the graph, with an optional seed"""
         self.axes.clear()
         self.axes.set_axis_bgcolor((.8,.8,.8))
-        nx.draw_networkx(self.graphs[self.graph_index], self.grid, ax=self.axes,
-                         node_color=self.mapped_colorings[self.graph_index],
-                         with_labels=False)
+        for i in range(len(self.components[self.graph_index])):
+            comp_colors = [self.mapped_coloring[node] for node in self.components[self.graph_index][i].nodes()]
+            nx.draw_networkx(self.components[self.graph_index][i], self.layouts[self.graph_index][i], ax=self.axes,
+                             node_color=self.mapped_coloring,
+                             with_labels=False)
         self.figure.canvas.draw()
 
     def zoom_factory(self, ax, base_scale=2.):
@@ -499,7 +504,7 @@ class DecomposeVisualizer(StageVisualizer):
         vertices = set()
 
         # Find vertices that are colored with colors in color_set
-        for index, color in enumerate(self.colorings[-1]):
+        for index, color in enumerate(self.coloring):
             if color in color_set:
                 vertices.add(index)
 
@@ -521,7 +526,7 @@ class DecomposeVisualizer(StageVisualizer):
         #     # Yield the component
         #     yield self.graph.subgraph(comp)
 
-        return nx.connected_component_subgraphs(self.graph.subgraph(vertices))
+        return [comp for comp in nx.connected_component_subgraphs(self.graph.subgraph(vertices))]
 
     def neighbors_set(self, centers):
         """
@@ -545,6 +550,17 @@ class DecomposeVisualizer(StageVisualizer):
             except ImportError:
                 # Spring layout if you do not have grahpviz
                 layouts.append( nx.spring_layout(tree) )
+
+        # Calculate offset
+        y_offset = 5
+        x_offset = 5
+        for l in layouts:
+            for index in l:
+                l[index] = [l[index][0] + x_offset, l[index][1] + y_offset]
+            x_offset += 5 
+            if x_offset > 10:
+                x_offset = 5
+                y_offset += 5
         return layouts
 
     def get_underlying_tree( self, connected_component, coloring ):
@@ -572,15 +588,40 @@ class DecomposeVisualizer(StageVisualizer):
 
         # Every new connected component is a subtree
         for sub_cc in nx.connected_component_subgraphs( connected_component ):
-            subtree = get_underlying_tree( sub_cc, coloring )
+            subtree = self.get_underlying_tree( sub_cc, coloring )
             tree = nx.compose( tree, subtree )
             tree.add_edge( root, subtree.root )
 
         # Root field for use in recursive case to connect tree and subtree
         tree.root = root
         return tree
+    
+    def four_color_sets(self, C, p):
+        # We want at least a few extra colors
+        assert p <= len(C) - 3, 'p too large for C'
+        # Randomly permute C
+        Cs = random.permutation(sorted(C)).tolist()
+        # Make an empty set for our output
+        sets = set()
+        # If we have a lot of colors, do something nice
+        if 2 * p + 1 <= len(C):
+            # First $p$ colors
+            sets.add(frozenset(Cs[:p]))
+            # Next $p$ colors
+            sets.add(frozenset(Cs[p:2*p]))
+            # Overlap those two sets
+            sets.add(frozenset(Cs[p//2:3*p//2]))
+            # First $p-1$ colors, and one unique color
+            sets.add(frozenset(Cs[:p-1] + [Cs[2*p]]))
+        # If we don't have a lot of colors, do a cramped version of the same thing
+        else:
+            # First $p$ colors
+            sets.add(frozenset(Cs[:p]))
+            # Last $p$ colors
+            sets.add(frozenset(Cs[-p:]))
+            # Overlap those two sets
+            sets.add(frozenset(Cs[(len(C)-p)//2:(p-len(C))//2]))
+            # First $p-1$ colors, and last color
+            sets.add(frozenset(Cs[:p-1] + [Cs[-1]]))
 
-
-
-
-
+        return sets
