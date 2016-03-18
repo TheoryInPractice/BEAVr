@@ -418,7 +418,7 @@ class DecomposeVisualizer(StageVisualizer):
                 mapped_colorings.append(mapped_coloring)
             self.mapped_colorings = mapped_colorings
 
-    def graph_layout(self): # done
+    def graph_layout(self):
         """Compute a layout of the graph, with an optional seed"""
         # Compute tree layouts for each connected component
         layouts = []
@@ -436,7 +436,7 @@ class DecomposeVisualizer(StageVisualizer):
                 x_offset = 10
                 y_offset += 10
 
-    def update_graph_display(self): # done
+    def update_graph_display(self):
         """Compute a layout of the graph, with an optional seed"""
         self.axes.clear()
         self.axes.set_axis_bgcolor((.8,.8,.8))
@@ -537,14 +537,14 @@ class DecomposeVisualizer(StageVisualizer):
     def get_tree_layouts( self, connected_components, coloring ):
         layouts = []
         for connected_component in connected_components:
-            tree = get_underlying_tree( connected_component, coloring )
+            tree = self.get_underlying_tree( connected_component, coloring )
             try:
                 # Nice circular layout if you have graphviz
                 from networkx import graphviz_layout
                 layouts.append( nx.graphviz_layout(tree,prog='twopi',args='') )
             except ImportError:
                 # Spring layout if you do not have grahpviz
-                layouts.append( nx.spring_layout(tree,prog='twopi',args='') )
+                layouts.append( nx.spring_layout(tree) )
         return layouts
 
     def get_underlying_tree( self, connected_component, coloring ):
