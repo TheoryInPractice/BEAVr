@@ -491,7 +491,7 @@ class DecomposeVisualizer(StageVisualizer):
 
         :param color_set: The color set
         :return: An iterator for connected components (subgraphs) induced by
-                color_set
+                 color_set
         """
 
         # Make an empty set to store vertices
@@ -530,3 +530,54 @@ class DecomposeVisualizer(StageVisualizer):
 
         res = reduce(lambda x, y: x | self.graph.neighbors(y), centers, set())
         return res - centers
+
+    def get_tree_layouts( self, connected_components, coloring ):
+        layouts = []
+        for connected_component in connected_components:
+            tree = get_underlying_tree( connected_component, coloring )
+            try:
+                # Nice circular layout if you have graphviz
+                from networkx import graphviz_layout
+                layouts.append( nx.graphviz_layout(tree,prog='twopi',args='') )
+            except ImportError:
+                # Spring layout if you do not have grahpviz
+                layouts.append( nx.spring_layout(tree,prog='twopi',args='') )
+        return layouts
+
+    def get_underlying_tree( self, connected_component, coloring ):
+        # Find the root (color with only one occurrence)
+        root = None
+        colors = [coloring[node] for node in connected_component.nodes()]
+        for index, color in enumerate(colors):
+            colors[index] = 'Not a color'
+            if color not in colors:
+                root = connected_component.nodes()[index]
+                break
+            colors[index] = color
+
+        # If we can't find a root, something's wrong!
+        if root == None:
+            print 'WARNING: Coloring this has no root', colors
+            return connected_component
+
+        # Create a new NetworkX graph to represent the tree
+        tree = nx.Graph()
+        tree.add_node( root )
+
+        # Remove the root from the connected component
+        connected_component.remove_node( root )
+
+        # Every new connected component is a subtree
+        for sub_cc in nx.connected_component_subgraphs( connected_component ):
+            subtree = get_underlying_tree( sub_cc, coloring )
+            tree = nx.compose( tree, subtree )
+            tree.add_edge( root, subtree.root )
+
+        # Root field for use in recursive case to connect tree and subtree
+        tree.root = root
+        return tree
+
+
+
+
+

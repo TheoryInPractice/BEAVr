@@ -57,7 +57,6 @@ class ConcussDataLoader(DataLoader):
         nodes = 0
         for f in files:
             if 'color/colorings/' == f[:16] and 'color/colorings/' != f:
-                print f
                 coloring = []
                 with self.archive.open(f) as coloring_file:
                     for line in coloring_file:
