@@ -1,3 +1,4 @@
+import math
 import os
 import os.path as path
 
@@ -81,33 +82,57 @@ class DecomposeInterface(StageInterface):
         self.vis.set_graph(graph, pattern, coloring)
 
         # Set one button
-        one_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_FORWARD, wx.ART_TOOLBAR,
-                self.tb_size)
-        one = self.tb.AddLabelTool(wx.NewId(), "Forward", one_bmp)
+        one_bmp = self.color_set_icon(0)
+        one = self.tb.AddLabelTool(wx.NewId(), "Color set one", one_bmp)
         self.Bind(wx.EVT_TOOL, self.on_one, one)
 
         # Set two button
-        two_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_BACK, wx.ART_TOOLBAR,
-                self.tb_size)
-        two = self.tb.AddLabelTool(wx.NewId(), "Backward", two_bmp)
+        two_bmp = self.color_set_icon(1)
+        two = self.tb.AddLabelTool(wx.NewId(), "Color set two", two_bmp)
         self.Bind(wx.EVT_TOOL, self.on_two, two)
 
         # Set three button
-        three_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_BACK, wx.ART_TOOLBAR,
-                self.tb_size)
-        three = self.tb.AddLabelTool(wx.NewId(), "Backward", three_bmp)
+        three_bmp = self.color_set_icon(2)
+        three = self.tb.AddLabelTool(wx.NewId(), "Color set three", three_bmp)
         self.Bind(wx.EVT_TOOL, self.on_three, three)
 
         # Set four button
-        four_bmp = wx.ArtProvider.GetBitmap(wx.ART_GO_BACK, wx.ART_TOOLBAR,
-                self.tb_size)
-        four = self.tb.AddLabelTool(wx.NewId(), "Backward", four_bmp)
+        four_bmp = self.color_set_icon(3)
+        four = self.tb.AddLabelTool(wx.NewId(), "Color set four", four_bmp)
         self.Bind(wx.EVT_TOOL, self.on_four, four)
 
         # Not needed until we get something below it
         #self.tb.AddSeparator()
 
         self.tb.Realize()
+
+    def color_set_icon(self, index):
+        """Create an icon for the given color set index"""
+        color_set = sorted(self.vis.color_sets[index])
+        # Create the bitmap
+        icon = wx.EmptyBitmap(*self.tb_size)
+        # Create a DC to draw on the bitmap
+        dc = wx.MemoryDC()
+        dc.SelectObject(icon)
+        # Draw on the bitmap using the DC
+        dc.Clear()
+        dc.SetPen(wx.Pen(wx.BLACK, 1))
+        assert self.tb_size[0] == self.tb_size[1], "Assume square icons"
+        tb_size = self.tb_size[0]
+        grid_len = int(math.ceil(math.sqrt(len(color_set))))
+        grid_size = tb_size // grid_len
+        for color in color_set:
+            rgb = [int(channel * 255) for channel in
+                    self.vis.color_palette[color%len(self.vis.color_palette)]]
+            dc.SetBrush(wx.Brush(wx.Colour(*rgb)))
+            grid_x = color_set.index(color) % grid_len
+            grid_y = color_set.index(color) / grid_len
+            dc.DrawRectangle(grid_x*grid_size, grid_y*grid_size, grid_size,
+                    grid_size)
+        # Select the null bitmap to 
+        dc.SelectObject(wx.NullBitmap)
+        # the bitmap now contains wahtever was drawn upon it
+        return icon
 
     def on_one(self, e):
         """Show the decompositions for color set one"""
@@ -610,26 +635,26 @@ class DecomposeVisualizer(StageVisualizer):
         # Randomly permute C
         Cs = random.permutation(sorted(C)).tolist()
         # Make an empty set for our output
-        sets = set()
+        sets = []
         # If we have a lot of colors, do something nice
         if 2 * p + 1 <= len(C):
             # First $p$ colors
-            sets.add(frozenset(Cs[:p]))
+            sets.append(frozenset(Cs[:p]))
             # Next $p$ colors
-            sets.add(frozenset(Cs[p:2*p]))
+            sets.append(frozenset(Cs[p:2*p]))
             # Overlap those two sets
-            sets.add(frozenset(Cs[p//2:3*p//2]))
+            sets.append(frozenset(Cs[p//2:3*p//2]))
             # First $p-1$ colors, and one unique color
-            sets.add(frozenset(Cs[:p-1] + [Cs[2*p]]))
+            sets.append(frozenset(Cs[:p-1] + [Cs[2*p]]))
         # If we don't have a lot of colors, do a cramped version of the same thing
         else:
             # First $p$ colors
-            sets.add(frozenset(Cs[:p]))
+            sets.append(frozenset(Cs[:p]))
             # Last $p$ colors
-            sets.add(frozenset(Cs[-p:]))
+            sets.append(frozenset(Cs[-p:]))
             # Overlap those two sets
-            sets.add(frozenset(Cs[(len(C)-p)//2:(p-len(C))//2]))
+            sets.append(frozenset(Cs[(len(C)-p)//2:(p-len(C))//2]))
             # First $p-1$ colors, and last color
-            sets.add(frozenset(Cs[:p-1] + [Cs[-1]]))
+            sets.append(frozenset(Cs[:p-1] + [Cs[-1]]))
 
         return sets
