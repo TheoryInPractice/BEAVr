@@ -368,7 +368,8 @@ class DecomposeVisualizer(StageVisualizer):
         self.axes.get_xaxis().set_visible(False)
         self.axes.get_yaxis().set_visible(False)
 
-        self.graphs = [] 
+        self.graph = nx.Graph()
+        self.graphs = []
         self.layouts = []
         self.grid = {}
 
@@ -384,11 +385,12 @@ class DecomposeVisualizer(StageVisualizer):
 
         self.Fit()
 
-    def set_graph(self, graphs, colorings, palette='brewer'):
+    def set_graph(self, graph, graphs, colorings, palette='brewer'):
         """Set the graph to display"""
         self.graph_index = 0
         self.zoomer = self.zoom_factory(self.axes, base_scale=1.5)
 
+        self.graph = graph
         self.graphs = graphs
         self.palette = palette
         self.colorings = colorings
@@ -487,10 +489,10 @@ class DecomposeVisualizer(StageVisualizer):
 
     def get_connected_components(self, color_set):
         """
-        An iterator for connected components given a specific color set
+        A generator for connected components given a specific color set
 
         :param color_set: The color set
-        :return: An iterator for connected components (subgraphs) induced by
+        :return: A generator for connected components (subgraphs) induced by
                  color_set
         """
 
@@ -502,23 +504,25 @@ class DecomposeVisualizer(StageVisualizer):
             if color in color_set:
                 vertices.add(index)
 
-        # While we have more vertices to look at
-        while vertices:
-            # Pop a vertex at random and make a set containing that vertex
-            comp = {vertices.pop()}
-            # Find its neighbors that are also in 'vertices'
-            exp = self.neighbors_set(comp) & vertices
-            # While we have more neighbors
-            while exp:
-                # Add those vertices to our component
-                comp.update(exp)
-                # Compute new neighbors
-                exp = self.neighbors_set(comp) & vertices
-            # We found a component, delete those vertices from original
-            # set of vertices
-            vertices = vertices - comp
-            # Yield the component
-            yield self.graph.subgraph(comp)
+        # # While we have more vertices to look at
+        # while vertices:
+        #     # Pop a vertex at random and make a set containing that vertex
+        #     comp = {vertices.pop()}
+        #     # Find its neighbors that are also in 'vertices'
+        #     exp = self.neighbors_set(comp) & vertices
+        #     # While we have more neighbors
+        #     while exp:
+        #         # Add those vertices to our component
+        #         comp.update(exp)
+        #         # Compute new neighbors
+        #         exp = self.neighbors_set(comp) & vertices
+        #     # We found a component, delete those vertices from original
+        #     # set of vertices
+        #     vertices = vertices - comp
+        #     # Yield the component
+        #     yield self.graph.subgraph(comp)
+
+        return nx.connected_component_subgraphs(self.graph.subgraph(vertices))
 
     def neighbors_set(self, centers):
         """
