@@ -400,20 +400,21 @@ class DecomposeVisualizer(StageVisualizer):
 
     def map_colorings(self):
         """Load colors from palette, map colorings to palette colors"""
-        colors = []
+        self.color_palette = []
         with open('data/palettes/'+self.palette) as palette_file:
             for line in palette_file:
                 line = line.strip()
                 if '#' not in line and ',' in line:
-                    colors.append([int(c)/255.0 for c in line.split(',')])
+                    self.color_palette.append(
+                            [int(c)/255.0 for c in line.split(',')])
         if len(self.colorings) == 1:
-            self.mapped_colorings = [colors[self.colorings[0]]]
+            self.mapped_colorings = [self.color_palette[self.colorings[0]]]
         else:
             mapped_colorings = []
             for coloring in self.colorings:
                 mapped_coloring = []
                 for color in coloring:
-                    mapped_coloring.append(colors[color%len(colors)])
+                    mapped_coloring.append(self.color_palette[color%len(self.color_palette)])
                 mapped_colorings.append(mapped_coloring)
             self.mapped_colorings = mapped_colorings
 
