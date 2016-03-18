@@ -118,20 +118,24 @@ class DecomposeInterface(StageInterface):
         dc.Clear()
         dc.SetPen(wx.Pen(wx.BLACK, 1))
         assert self.tb_size[0] == self.tb_size[1], "Assume square icons"
+        # Calculate dimensions of the squares and grid
         tb_size = self.tb_size[0]
         grid_len = int(math.ceil(math.sqrt(len(color_set))))
         grid_size = tb_size // grid_len
+        # Draw each square
         for color in color_set:
+            # Prepare to draw in the right color
             rgb = [int(channel * 255) for channel in
                     self.vis.color_palette[color%len(self.vis.color_palette)]]
             dc.SetBrush(wx.Brush(wx.Colour(*rgb)))
+            # Calculate where the square should be located
             grid_x = color_set.index(color) % grid_len
             grid_y = color_set.index(color) / grid_len
+            # Draw the square
             dc.DrawRectangle(grid_x*grid_size, grid_y*grid_size, grid_size,
                     grid_size)
-        # Select the null bitmap to 
+        # Select the null bitmap to flush all changes to icon
         dc.SelectObject(wx.NullBitmap)
-        # the bitmap now contains wahtever was drawn upon it
         return icon
 
     def on_one(self, e):
@@ -585,15 +589,18 @@ class DecomposeVisualizer(StageVisualizer):
                 layouts.append( nx.spring_layout(tree) )
 
         # Calculate offset
-        y_offset = 5
-        x_offset = 5
+        y_offset = 0
+        x_offset = 0
+        grid_len = int(math.ceil(math.sqrt(len(layouts))))
+        # TODO: Find a good value for this
+        grid_size = 100
         for l in layouts:
             for index in l:
                 l[index] = [l[index][0] + x_offset, l[index][1] + y_offset]
-            x_offset += 5 
-            if x_offset > 10:
-                x_offset = 5
-                y_offset += 5
+            x_offset += grid_size
+            if x_offset > grid_len*grid_size:
+                x_offset = 0
+                y_offset += grid_size
         return layouts
 
     def get_underlying_tree( self, connected_component ):
