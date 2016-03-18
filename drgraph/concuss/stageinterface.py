@@ -545,8 +545,8 @@ class DecomposeVisualizer(StageVisualizer):
             tree = self.get_underlying_tree( connected_component, coloring )
             try:
                 # Nice circular layout if you have graphviz
-                from networkx import graphviz_layout
-                layouts.append( nx.graphviz_layout(tree,prog='twopi',args='') )
+                from networkx.drawing.nx_agraph import graphviz_layout
+                layouts.append( graphviz_layout(tree,prog='twopi',args='') )
             except ImportError:
                 # Spring layout if you do not have grahpviz
                 layouts.append( nx.spring_layout(tree) )
