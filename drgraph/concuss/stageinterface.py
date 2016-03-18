@@ -441,7 +441,6 @@ class DecomposeVisualizer(StageVisualizer):
         """Compute a layout of the graph, with an optional seed"""
         self.axes.clear()
         self.axes.set_axis_bgcolor((.8,.8,.8))
-        print self.graph_index, self.graphs
         nx.draw_networkx(self.graphs[self.graph_index], self.grid, ax=self.axes,
                          node_color=self.mapped_colorings[self.graph_index],
                          with_labels=False)
