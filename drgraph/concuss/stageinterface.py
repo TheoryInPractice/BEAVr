@@ -401,7 +401,9 @@ class DecomposeVisualizer(StageVisualizer):
 
         for cs in self.color_sets:
             self.components.append(self.get_connected_components(cs))
-            self.layouts.append(self.get_tree_layouts(self.components[-1], self.coloring))
+            self.layouts.append(self.get_tree_layouts(self.components[-1]))
+
+
 
         self.update_graph_display()
 
@@ -539,10 +541,10 @@ class DecomposeVisualizer(StageVisualizer):
         res = reduce(lambda x, y: x | self.graph.neighbors(y), centers, set())
         return res - centers
 
-    def get_tree_layouts( self, connected_components, coloring ):
+    def get_tree_layouts( self, connected_components ):
         layouts = []
         for connected_component in connected_components:
-            tree = self.get_underlying_tree( connected_component, coloring )
+            tree = self.get_underlying_tree( connected_component )
             try:
                 # Nice circular layout if you have graphviz
                 from networkx.drawing.nx_agraph import graphviz_layout
@@ -563,10 +565,10 @@ class DecomposeVisualizer(StageVisualizer):
                 y_offset += 5
         return layouts
 
-    def get_underlying_tree( self, connected_component, coloring ):
+    def get_underlying_tree( self, connected_component ):
         # Find the root (color with only one occurrence)
         root = None
-        colors = [coloring[node] for node in connected_component.nodes()]
+        colors = [self.coloring[node] for node in connected_component.nodes()]
         for index, color in enumerate(colors):
             colors[index] = 'Not a color'
             if color not in colors:
