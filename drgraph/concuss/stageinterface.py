@@ -385,10 +385,11 @@ class DecomposeVisualizer(StageVisualizer):
 
         self.Fit()
 
-    def set_graph(self, graph, graphs, colorings, palette='brewer'):
+    def set_graph(self, graph, pattern, graphs, colorings, palette='brewer'):
         """Set the graph to display"""
         self.graph_index = 0
         self.zoomer = self.zoom_factory(self.axes, base_scale=1.5)
+        self.pattern = pattern
 
         self.graph = graph
         self.graphs = graphs

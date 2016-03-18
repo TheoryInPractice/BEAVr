@@ -25,6 +25,7 @@ class ConcussDataLoader(DataLoader):
         :returns: loads and stores graph and colorings
         """
         self.graph = self.load_graph()
+        self.pattern = self.load_pattern()
         self.colorings = self.load_colorings()
 
     def load_graph(self):
@@ -44,6 +45,24 @@ class ConcussDataLoader(DataLoader):
         with self.archive.open(graph_name, 'r') as graph_file:
             # Use correct reader to get and return NetworkX graph from graph file
             return graph_reader(graph_file)
+
+    def load_pattern(self):
+        """
+        Loads graph data from the data loader's archive
+        Pattern filename must be specified in visinfo.cfg
+        :returns: graph
+        """
+        pattern_name = self.parser.get('graphs', 'motif')
+
+        # Get extension of graph file, which indicates storage format
+        pattern_ext = splitext(pattern_name)[1]
+        # Get correct reader for graph's format, based on file extension
+        graph_reader = self.get_graph_reader(pattern_ext)
+
+        # Open graph as file object
+        with self.archive.open(pattern_name, 'r') as pattern_file:
+            # Use correct reader to get and return NetworkX graph from graph file
+            return graph_reader(pattern_file)
 
     def load_colorings(self):
         """
