@@ -308,8 +308,7 @@ class ColorVisualizer(StageVisualizer):
                          node_color=self.mapped_colorings[self.coloring_index],
                          with_labels=False)
         # Redraw
-        event = wx.PyCommandEvent(wx.EVT_PAINT.typeId, self.GetId())
-        wx.PostEvent(self.canvas.GetEventHandler(), event)
+        self.canvas.Refresh()
 
     def zoom_factory(self, ax, base_scale=2.):
         """
@@ -342,8 +341,7 @@ class ColorVisualizer(StageVisualizer):
             ax.set_ylim([ydata - (ydata - cur_ylim[0])*scale_factor,
                          ydata + (cur_ylim[1] - ydata)*scale_factor])
             # Force redraw
-            event = wx.PyCommandEvent(wx.EVT_PAINT.typeId, self.GetId())
-            wx.PostEvent(self.canvas.GetEventHandler(), event)
+            self.canvas.Refresh()
 
         # Get the figure of interest
         fig = ax.get_figure()
