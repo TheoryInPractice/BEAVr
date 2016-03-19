@@ -431,11 +431,12 @@ class DecomposeVisualizer(StageVisualizer):
         self.color_sets = self.four_color_sets(set(self.coloring), len(pattern))
 
         for cs in self.color_sets:
-            self.components.append(self.get_connected_components(cs))
-            self.layouts.append(self.get_tree_layouts(self.components[-1]))
+            cc_list = self.get_connected_components(cs)
+            self.components.append(cc_list)
+            self.layouts.append(self.get_tree_layouts(cc_list))
             print '\n\nColor set:', cs
             print 'Mapped color set:', [self.color_palette[c] for c in cs]
-            for cc in self.components[-1]:
+            for cc in cc_list:
                 print '\nNodes:', cc.nodes()
                 print 'Edges:', cc.edges()
                 print 'Coloring:', [self.coloring[node] for node in cc.nodes()]
@@ -545,7 +546,7 @@ class DecomposeVisualizer(StageVisualizer):
             if color in color_set:
                 vertices.add(index)
 
-        # # While we have more vertices to look at
+        # While we have more vertices to look at
         # while vertices:
         #     # Pop a vertex at random and make a set containing that vertex
         #     comp = {vertices.pop()}
@@ -593,7 +594,7 @@ class DecomposeVisualizer(StageVisualizer):
         x_offset = 0
         grid_len = int(math.ceil(math.sqrt(len(layouts))))
         # TODO: Find a good value for this
-        grid_size = 100
+        grid_size = 10
         for l in layouts:
             for index in l:
                 l[index] = [l[index][0] + x_offset, l[index][1] + y_offset]
@@ -624,6 +625,7 @@ class DecomposeVisualizer(StageVisualizer):
         tree.add_node( root )
 
         # Remove the root from the connected component
+        connected_component = nx.Graph(connected_component)
         connected_component.remove_node( root )
 
         # Every new connected component is a subtree
