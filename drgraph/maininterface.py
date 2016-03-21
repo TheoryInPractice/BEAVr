@@ -8,7 +8,7 @@ import networkx as nx
 
 from drgraph.concuss.stageinterface import ColorInterface, DecomposeInterface
 from drgraph.stageinterface import DummyStageInterface
-from drgraph.data_loader import DataLoaderFactory, UnknownPipelineError
+from drgraph.dataloader import DataLoaderFactory, UnknownPipelineError
 
 class MainInterface(wx.Frame):
     """

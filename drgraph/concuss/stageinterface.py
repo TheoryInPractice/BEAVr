@@ -15,6 +15,7 @@ from matplotlib.backends.backend_wxagg import (
 from matplotlib.figure import Figure
 
 from drgraph.stageinterface import StageInterface, StageVisualizer
+from drgraph.concuss.visualizerbackend import DecompositionGenerator
 
 class ColorInterface(StageInterface):
     """GUI elements for CONCUSS coloring stage visualization"""
@@ -46,6 +47,8 @@ class ColorInterface(StageInterface):
         self.Bind(wx.EVT_TOOL, self.on_random, rand)
 
         self.tb.Realize()
+
+
 
         vis = ColorVisualizer(self)
         self.set_visualization(vis)
@@ -297,6 +300,12 @@ class ColorVisualizer(StageVisualizer):
 
         self.update_graph_display(reset_zoom=True)
 
+    def graph_layout(self, seed=None):
+        """Compute a layout of the graph, with an optional seed"""
+        if seed is not None:
+            random.seed(seed)
+        self.layout = nx.spring_layout(self.graph)
+
     def map_colorings(self):
         """Load colors from palette, map colorings to palette colors"""
         self.color_palette = []
@@ -419,17 +428,19 @@ class DecomposeVisualizer(StageVisualizer):
         self.coloring = coloring
         self.map_colorings()
 
+        self.DG = DecompositionGenerator( self.graph, self.coloring )
+
         self.components = []
         self.layouts = []
         
-        self.color_sets = self.four_color_sets(set(self.coloring), len(pattern))
+        self.color_sets = self.DG.four_color_sets(set(self.coloring), len(pattern))
 
         for cs in self.color_sets:
-            cc_list = self.get_connected_components(cs)
+            cc_list = self.DG.get_connected_components(cs)
             self.components.append(cc_list)
             # print '\n\nColor set:', cs
             # print 'Mapped color set:', [self.color_palette[c] for c in cs]
-            self.layouts.append(self.get_tree_layouts(cc_list))
+            self.layouts.append(self.DG.get_tree_layouts(cc_list, self.coloring))
             # for cc in cc_list:
             #     print '\nNodes:', cc.nodes()
             #     print 'Edges:', cc.edges()
@@ -453,24 +464,6 @@ class DecomposeVisualizer(StageVisualizer):
             for color in self.coloring:
                 mapped_coloring.append(self.color_palette[color%len(self.color_palette)])
             self.mapped_coloring = mapped_coloring
-
-    def graph_layout(self):
-        """Compute a layout of the graph, with an optional seed"""
-        # Compute tree layouts for each connected component
-        layouts = []
-        for sub in nx.connected_component_subgraphs(self.graph):
-            layouts.append(nx.circular_layout(sub))
-        
-        # Calculate offset
-        y_offset = 10
-        x_offset = 10
-        for l in layouts:
-            for index in l:
-                self.grid[index] = [l[index][0] + x_offset, l[index][1] + y_offset]
-            x_offset += 10
-            if x_offset > 20:
-                x_offset = 10
-                y_offset += 10
 
     def update_graph_display(self):
         self.axes.clear()
@@ -522,131 +515,3 @@ class DecomposeVisualizer(StageVisualizer):
 
         # Return the function
         return zoom_fun
-
-    def get_connected_components(self, color_set):
-        """
-        A generator for connected components given a specific color set
-
-        :param color_set: The color set
-        :return: A generator for connected components (subgraphs) induced by
-                 color_set
-        """
-
-        # Make an empty set to store vertices
-        vertices = set()
-
-        # Find vertices that are colored with colors in color_set
-        for index, color in enumerate(self.coloring):
-            if color in color_set:
-                vertices.add(index)
-
-        # While we have more vertices to look at
-        # while vertices:
-        #     # Pop a vertex at random and make a set containing that vertex
-        #     comp = {vertices.pop()}
-        #     # Find its neighbors that are also in 'vertices'
-        #     exp = self.neighbors_set(comp) & vertices
-        #     # While we have more neighbors
-        #     while exp:
-        #         # Add those vertices to our component
-        #         comp.update(exp)
-        #         # Compute new neighbors
-        #         exp = self.neighbors_set(comp) & vertices
-        #     # We found a component, delete those vertices from original
-        #     # set of vertices
-        #     vertices = vertices - comp
-        #     # Yield the component
-        #     yield self.graph.subgraph(comp)
-
-        return list(nx.connected_component_subgraphs( self.graph.subgraph(vertices) ))
-
-    def get_tree_layouts( self, connected_components ):
-        layouts = []
-        for connected_component in connected_components:
-            tree = self.get_underlying_tree( connected_component )
-            try:
-                # Nice circular layout if you have graphviz
-                from networkx.drawing.nx_agraph import graphviz_layout
-                layouts.append( graphviz_layout(tree,prog='twopi',root=str(tree.root),args='-Gsize="2,2"') )
-            except ImportError:
-                # Spring layout if you do not have grahpviz
-                layouts.append( nx.spring_layout(tree) )
-
-        # Calculate offset
-        y_offset = 0
-        x_offset = 0
-        grid_len = int(math.ceil(math.sqrt(len(layouts))))
-        # TODO: Find a good value for this
-        grid_size = 10
-        for l in layouts:
-            for index in l:
-                l[index] = [l[index][0] + x_offset, l[index][1] + y_offset]
-            x_offset += grid_size
-            if x_offset > grid_len*grid_size:
-                x_offset = 0
-                y_offset += grid_size
-        return layouts
-
-    def get_underlying_tree( self, connected_component ):
-        # Find the root (color with only one occurrence)
-        root = None
-        colors = [self.coloring[node] for node in connected_component.nodes()]
-        for index, color in enumerate(colors):
-            colors[index] = 'Not a color'
-            if color not in colors:
-                root = connected_component.nodes()[index]
-                break
-            colors[index] = color
-
-        # If we can't find a root, something's wrong!
-        if root == None:
-            print 'WARNING: Coloring this has no root', colors
-            return connected_component
-
-        # Create a new NetworkX graph to represent the tree
-        tree = nx.Graph()
-        tree.add_node( root )
-
-        # Remove the root from the connected component
-        connected_component = nx.Graph(connected_component)
-        connected_component.remove_node( root )
-
-        # Every new connected component is a subtree
-        for sub_cc in nx.connected_component_subgraphs( connected_component ):
-            subtree = self.get_underlying_tree(sub_cc)
-            tree = nx.compose( tree, subtree )
-            tree.add_edge( root, subtree.root )
-
-        # Root field for use in recursive case to connect tree and subtree
-        tree.root = root
-        return tree
-    
-    def four_color_sets(self, C, p):
-        # We want at least a few extra colors
-        assert p <= len(C) - 3, 'p too large for C'
-        # Randomly permute C
-        Cs = random.permutation(sorted(C)).tolist()
-        # Make an empty set for our output
-        sets = []
-        # If we have a lot of colors, do something nice
-        if 2 * p + 1 <= len(C):
-            # First $p$ colors
-            sets.append(frozenset(Cs[:p]))
-            # Next $p$ colors
-            sets.append(frozenset(Cs[p:2*p]))
-            # Overlap those two sets
-            sets.append(frozenset(Cs[p//2:3*p//2]))
-            # First $p-1$ colors, and one unique color
-            sets.append(frozenset(Cs[:p-1] + [Cs[2*p]]))
-        # If we don't have a lot of colors, do a cramped version of the same thing
-        else:
-            # First $p$ colors
-            sets.append(frozenset(Cs[:p]))
-            # Last $p$ colors
-            sets.append(frozenset(Cs[-p:]))
-            # Overlap those two sets
-            sets.append(frozenset(Cs[(len(C)-p)//2:(p-len(C))//2]))
-            # First $p-1$ colors, and last color
-            sets.append(frozenset(Cs[:p-1] + [Cs[-1]]))
-
-        return sets

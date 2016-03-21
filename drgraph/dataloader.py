@@ -23,7 +23,8 @@ class DataLoader(object):
         Load data from self.archive
         """
 
-    def load_color_palette()
+    def load_color_palette():
+        pass
 
 
 class DataLoaderFactory(object):
