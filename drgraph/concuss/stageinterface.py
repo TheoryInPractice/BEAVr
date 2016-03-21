@@ -16,6 +16,7 @@ from matplotlib.figure import Figure
 
 from drgraph.stageinterface import StageInterface, StageVisualizer
 from drgraph.concuss.visualizerbackend import DecompositionGenerator
+from drgraph.util import load_palette, map_coloring, map_colorings
 
 class ColorInterface(StageInterface):
     """GUI elements for CONCUSS coloring stage visualization"""
@@ -129,7 +130,7 @@ class DecomposeInterface(StageInterface):
         for color in color_set:
             # Prepare to draw in the right color
             rgb = [int(channel * 255) for channel in
-                    self.vis.color_palette[color%len(self.vis.color_palette)]]
+                    self.vis.palette[color%len(self.vis.palette)]]
             dc.SetBrush(wx.Brush(wx.Colour(*rgb)))
             # Calculate where the square should be located
             grid_x = color_set.index(color) % grid_len
@@ -277,7 +278,7 @@ class ColorVisualizer(StageVisualizer):
         dc.DrawText(color_label, separator_x + margin, margin)
         for color in color_set ^ previous_color_set:
             rgb = [int(channel * 255) for channel in
-                    self.color_palette[color%len(self.color_palette)]]
+                    self.palette[color%len(self.palette)]]
             dc.SetBrush(wx.Brush(wx.Colour(rgb[0], rgb[1], rgb[2])))
             dc.DrawRectangle(color_box_x, color_box_y, color_box_size,
                     color_box_size)
@@ -287,15 +288,15 @@ class ColorVisualizer(StageVisualizer):
                 color_box_x = margin
                 color_box_y += color_box_size + margin
 
-    def set_graph(self, graph, colorings, palette='brewer'):
+    def set_graph(self, graph, colorings, palette_name='brewer'):
         """Set the graph to display"""
         self.coloring_index = 0
         self.zoomer = self.zoom_factory(self.axes, base_scale=1.5)
 
         self.graph = graph
-        self.palette = palette
+        self.palette = load_palette(palette_name)
         self.colorings = colorings
-        self.map_colorings()
+        self.mapped_colorings = map_colorings(self.palette, self.colorings)
         self.graph_layout(0)
 
         self.update_graph_display(reset_zoom=True)
@@ -305,26 +306,6 @@ class ColorVisualizer(StageVisualizer):
         if seed is not None:
             random.seed(seed)
         self.layout = nx.spring_layout(self.graph)
-
-    def map_colorings(self):
-        """Load colors from palette, map colorings to palette colors"""
-        self.color_palette = []
-        with open('data/palettes/'+self.palette) as palette_file:
-            for line in palette_file:
-                line = line.strip()
-                if '#' not in line and ',' in line:
-                    self.color_palette.append(
-                            [int(c)/255.0 for c in line.split(',')])
-        if len(self.colorings) == 1:
-            self.mapped_colorings = [self.color_palette[self.colorings[0]]]
-        else:
-            mapped_colorings = []
-            for coloring in self.colorings:
-                mapped_coloring = []
-                for color in coloring:
-                    mapped_coloring.append(self.color_palette[color%len(self.color_palette)])
-                mapped_colorings.append(mapped_coloring)
-            self.mapped_colorings = mapped_colorings
 
     def update_graph_display(self, reset_zoom=False):
         """Compute a layout of the graph, with an optional seed"""
@@ -417,16 +398,16 @@ class DecomposeVisualizer(StageVisualizer):
 
         self.Fit()
 
-    def set_graph(self, graph, pattern, coloring, palette='brewer'):
+    def set_graph(self, graph, pattern, coloring, palette_name='brewer'):
         """Set the graph to display"""
         self.graph_index = 0
         self.zoomer = self.zoom_factory(self.axes, base_scale=1.5)
         self.pattern = pattern
 
         self.graph = graph
-        self.palette = palette
+        self.palette = load_palette(palette_name)
         self.coloring = coloring
-        self.map_colorings()
+        self.mapped_coloring = map_coloring(self.palette, self.coloring)
 
         self.DG = DecompositionGenerator( self.graph, self.coloring )
 
@@ -439,7 +420,7 @@ class DecomposeVisualizer(StageVisualizer):
             cc_list = self.DG.get_connected_components(cs)
             self.components.append(cc_list)
             # print '\n\nColor set:', cs
-            # print 'Mapped color set:', [self.color_palette[c] for c in cs]
+            # print 'Mapped color set:', [self.palette[c] for c in cs]
             self.layouts.append(self.DG.get_tree_layouts(cc_list, self.coloring))
             # for cc in cc_list:
             #     print '\nNodes:', cc.nodes()
@@ -447,23 +428,6 @@ class DecomposeVisualizer(StageVisualizer):
             #     print 'Coloring:', [self.coloring[node] for node in cc.nodes()]
 
         self.update_graph_display()
-
-    def map_colorings(self):
-        """Load colors from palette, map colorings to palette colors"""
-        self.color_palette = []
-        with open('data/palettes/'+self.palette) as palette_file:
-            for line in palette_file:
-                line = line.strip()
-                if '#' not in line and ',' in line:
-                    self.color_palette.append(
-                            [int(c)/255.0 for c in line.split(',')])
-        if len(self.coloring) == 1:
-            self.mapped_coloring = [self.color_palette[self.coloring[0]]]
-        else:
-            mapped_coloring = []
-            for color in self.coloring:
-                mapped_coloring.append(self.color_palette[color%len(self.color_palette)])
-            self.mapped_coloring = mapped_coloring
 
     def update_graph_display(self):
         self.axes.clear()
