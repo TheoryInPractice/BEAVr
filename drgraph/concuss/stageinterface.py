@@ -317,12 +317,6 @@ class ColorVisualizer(StageVisualizer):
                 mapped_colorings.append(mapped_coloring)
             self.mapped_colorings = mapped_colorings
 
-    def graph_layout(self, seed=None):
-        """Compute a layout of the graph, with an optional seed"""
-        if seed is not None:
-            random.seed(seed)
-        self.layout = nx.spring_layout(self.graph)
-
     def update_graph_display(self, reset_zoom=False):
         """Compute a layout of the graph, with an optional seed"""
         # Save zoom level, etc.
@@ -565,17 +559,6 @@ class DecomposeVisualizer(StageVisualizer):
         #     yield self.graph.subgraph(comp)
 
         return list(nx.connected_component_subgraphs( self.graph.subgraph(vertices) ))
-
-    def neighbors_set(self, centers):
-        """
-        Returns all neighbors given a set of vertices
-
-        :param centers: The vertices whose neighbors are sought
-        :return: A set containing the neighbors
-        """
-
-        res = reduce(lambda x, y: x | self.graph.neighbors(y), centers, set())
-        return res - centers
 
     def get_tree_layouts( self, connected_components ):
         layouts = []
