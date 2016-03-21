@@ -433,13 +433,13 @@ class DecomposeVisualizer(StageVisualizer):
         for cs in self.color_sets:
             cc_list = self.get_connected_components(cs)
             self.components.append(cc_list)
+            # print '\n\nColor set:', cs
+            # print 'Mapped color set:', [self.color_palette[c] for c in cs]
             self.layouts.append(self.get_tree_layouts(cc_list))
-            print '\n\nColor set:', cs
-            print 'Mapped color set:', [self.color_palette[c] for c in cs]
-            for cc in cc_list:
-                print '\nNodes:', cc.nodes()
-                print 'Edges:', cc.edges()
-                print 'Coloring:', [self.coloring[node] for node in cc.nodes()]
+            # for cc in cc_list:
+            #     print '\nNodes:', cc.nodes()
+            #     print 'Edges:', cc.edges()
+            #     print 'Coloring:', [self.coloring[node] for node in cc.nodes()]
 
         self.update_graph_display()
 
@@ -564,7 +564,7 @@ class DecomposeVisualizer(StageVisualizer):
         #     # Yield the component
         #     yield self.graph.subgraph(comp)
 
-        return [comp for comp in nx.connected_component_subgraphs(self.graph.subgraph(vertices))]
+        return list(nx.connected_component_subgraphs( self.graph.subgraph(vertices) ))
 
     def neighbors_set(self, centers):
         """
@@ -584,7 +584,7 @@ class DecomposeVisualizer(StageVisualizer):
             try:
                 # Nice circular layout if you have graphviz
                 from networkx.drawing.nx_agraph import graphviz_layout
-                layouts.append( graphviz_layout(tree,prog='twopi',args='') )
+                layouts.append( graphviz_layout(tree,prog='twopi',root=str(tree.root),args='-Gsize="2,2"') )
             except ImportError:
                 # Spring layout if you do not have grahpviz
                 layouts.append( nx.spring_layout(tree) )
