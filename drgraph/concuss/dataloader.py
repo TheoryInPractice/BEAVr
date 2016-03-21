@@ -3,7 +3,7 @@ import collections
 
 from networkx import Graph
 
-from drgraph.data_loader import DataLoader
+from drgraph.dataloader import DataLoader
 
 class Factory:
     """ Wrapper allowing DataLoaderFactory to create a ConcussDataLoader """

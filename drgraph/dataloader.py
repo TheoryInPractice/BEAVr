@@ -23,6 +23,8 @@ class DataLoader(object):
         Load data from self.archive
         """
 
+    def load_color_palette()
+
 
 class DataLoaderFactory(object):
     """ Class that instantiates DataLoader objects """
@@ -54,7 +56,7 @@ class DataLoaderFactory(object):
 
         # Import DataLoader class for the given pipeline
         try:
-            pipe_loader = import_module('drgraph.' + pipe_name + '.data_loader')
+            pipe_loader = import_module('drgraph.' + pipe_name + '.dataloader')
         except ImportError:
             raise UnknownPipelineError(pipe_name)
             
