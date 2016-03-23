@@ -44,13 +44,13 @@ class TestUtil(unittest.TestCase):
         colorings = [[7, 3, 6, 2, 0], [1, 3, 7, 5]]
         color_palette = [(a,b,c) for a in [0,1] for b in [0,1] for c in [0,1]]
         expected_mapped = [[(1,1,1), (0,1,1), (1,1,0), (0,1,0), (0,0,0)],
-                           [(0,0,1), (0,1,1), (1,1,1), (1,0,0)]]
+                           [(0,0,1), (0,1,1), (1,1,1), (1,0,1)]]
         
         actual_mapped = util.map_colorings(color_palette, colorings)
 
         for exp_map_col, act_map_col in zip(expected_mapped, actual_mapped):
             for exp, act in zip(exp_map_col, act_map_col):
-                self.assertEqual(exp, act, msg="Mapped coloring" +\
+                self.assertEqual(exp, act, msg="Mapped colorings" +\
                                 "\n  Expected: " + str(exp_map_col) + \
                                 "\n  Actual:   " + str(act_map_col))
 
