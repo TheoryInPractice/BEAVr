@@ -14,7 +14,7 @@ from matplotlib.backends.backend_wxagg import (
 )
 from matplotlib.figure import Figure
 
-from drgraph.stageinterface import StageInterface, StageVisualizer
+from drgraph.stageinterface import StageInterface, StageVisualizer, MatplotlibVisualizer
 from drgraph.concuss.visualizerbackend import DecompositionGenerator
 from drgraph.util import load_palette, map_coloring, map_colorings
 
@@ -183,28 +183,15 @@ class CombineInterface(StageInterface):
         super(CombineInterface, self).__init__(parent)
 
 
-class ColorVisualizer(StageVisualizer):
+class ColorVisualizer(MatplotlibVisualizer):
     """The visualization for the CONCUSS coloring stage"""
 
     def __init__(self, parent):
         """Create the CONCUSS coloring visualization"""
         super(ColorVisualizer, self).__init__(parent)
 
-        self.figure = matplotlib.figure.Figure()
-        self.axes = self.figure.add_subplot(111)
-        self.figure.subplots_adjust(top=1, bottom=0, right=1, left=0)
-
-        self.axes.get_xaxis().set_visible(False)
-        self.axes.get_yaxis().set_visible(False)
-
         self.graph = nx.Graph()
         self.layout = []
-
-        self.canvas = FigureCanvas(self, -1, self.figure)
-
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
-        self.SetSizer(self.sizer)
 
         self.toolbar = NavigationToolbar(self.canvas)
         self.toolbar.pan()
@@ -216,9 +203,7 @@ class ColorVisualizer(StageVisualizer):
 
     def on_paint(self, evt):
         """Draw a legend in the top-left corner of the graph display"""
-        dc = wx.PaintDC(self.canvas)
-        # First, draw the graph with matplotlib
-        self.canvas.draw(dc)
+        dc = super(ColorVisualizer, self).on_paint(evt)
 
         # Calculate the size of the legend
         legend_height = 40  # Should be big enough
@@ -291,7 +276,6 @@ class ColorVisualizer(StageVisualizer):
     def set_graph(self, graph, colorings, palette_name='brewer'):
         """Set the graph to display"""
         self.coloring_index = 0
-        self.zoomer = self.zoom_factory(self.axes, base_scale=1.5)
 
         self.graph = graph
         self.palette = load_palette(palette_name)
@@ -321,76 +305,22 @@ class ColorVisualizer(StageVisualizer):
         self.axes.set_axis_bgcolor((.8,.8,.8))
         nx.draw_networkx(self.graph, self.layout, ax=self.axes,
                          node_color=self.mapped_colorings[self.coloring_index],
-                         with_labels=True)
+                         with_labels=False)
         # Redraw
         self.canvas.Refresh()
 
-    def zoom_factory(self, ax, base_scale=2.):
-        """
-        Handle zooming using the scroll wheel.
 
-        Original source: https://gist.github.com/tacaswell/3144287
-        """
-        def zoom_fun(event):
-            # Get the current x and y limits
-            cur_xlim = ax.get_xlim()
-            cur_ylim = ax.get_ylim()
-            cur_xrange = (cur_xlim[1] - cur_xlim[0])*.5
-            cur_yrange = (cur_ylim[1] - cur_ylim[0])*.5
-            # Get event location
-            xdata = event.xdata
-            ydata = event.ydata
-            if event.button == 'up':
-                # Deal with zoom in
-                scale_factor = 1/base_scale
-            elif event.button == 'down':
-                # Deal with zoom out
-                scale_factor = base_scale
-            else:
-                # Deal with something that should never happen
-                scale_factor = 1
-                print event.button
-            # Set new limits - improved from original
-            ax.set_xlim([xdata - (xdata - cur_xlim[0])*scale_factor,
-                         xdata + (cur_xlim[1] - xdata)*scale_factor])
-            ax.set_ylim([ydata - (ydata - cur_ylim[0])*scale_factor,
-                         ydata + (cur_ylim[1] - ydata)*scale_factor])
-            # Force redraw
-            self.canvas.Refresh()
-
-        # Get the figure of interest
-        fig = ax.get_figure()
-        # Attach the call back
-        fig.canvas.mpl_connect('scroll_event', zoom_fun)
-
-        # Return the function
-        return zoom_fun
-
-
-class DecomposeVisualizer(StageVisualizer):
-    """The visualization for the CONCUSS coloring stage"""
+class DecomposeVisualizer(MatplotlibVisualizer):
+    """The visualization for the CONCUSS decompose stage"""
 
     def __init__(self, parent):
-        """Create the CONCUSS coloring visualization"""
+        """Create the CONCUSS decompose visualization"""
         super(DecomposeVisualizer, self).__init__(parent)
-
-        self.figure = matplotlib.figure.Figure()
-        self.axes = self.figure.add_subplot(111)
-        self.figure.subplots_adjust(top=1, bottom=0, right=1, left=0)
-
-        self.axes.get_xaxis().set_visible(False)
-        self.axes.get_yaxis().set_visible(False)
 
         self.graph = nx.Graph()
         self.graphs = []
         self.layouts = []
         self.grid = {}
-
-        self.canvas = FigureCanvas(self, -1, self.figure)
-
-        self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
-        self.SetSizer(self.sizer)
 
         self.toolbar = NavigationToolbar(self.canvas)
         self.toolbar.pan()
@@ -401,7 +331,6 @@ class DecomposeVisualizer(StageVisualizer):
     def set_graph(self, graph, pattern, coloring, palette_name='brewer'):
         """Set the graph to display"""
         self.graph_index = 0
-        self.zoomer = self.zoom_factory(self.axes, base_scale=1.5)
         self.pattern = pattern
 
         self.graph = graph
@@ -436,46 +365,5 @@ class DecomposeVisualizer(StageVisualizer):
                               self.layouts[self.graph_index]):
             comp_colors = [self.mapped_coloring[node] for node in cc.nodes()]
             nx.draw_networkx(cc, layout, ax=self.axes, node_color=comp_colors,
-                             with_labels=True)
-        self.figure.canvas.draw()
-
-    def zoom_factory(self, ax, base_scale=2.):
-        """
-        Handle zooming using the scroll wheel.
-
-        Original source: https://gist.github.com/tacaswell/3144287
-        """
-        def zoom_fun(event):
-            # Get the current x and y limits
-            cur_xlim = ax.get_xlim()
-            cur_ylim = ax.get_ylim()
-            cur_xrange = (cur_xlim[1] - cur_xlim[0])*.5
-            cur_yrange = (cur_ylim[1] - cur_ylim[0])*.5
-            # Get event location
-            xdata = event.xdata
-            ydata = event.ydata
-            if event.button == 'up':
-                # Deal with zoom in
-                scale_factor = 1/base_scale
-            elif event.button == 'down':
-                # Deal with zoom out
-                scale_factor = base_scale
-            else:
-                # Deal with something that should never happen
-                scale_factor = 1
-                print event.button
-            # Set new limits - improved from original
-            ax.set_xlim([xdata - (xdata - cur_xlim[0])*scale_factor,
-                         xdata + (cur_xlim[1] - xdata)*scale_factor])
-            ax.set_ylim([ydata - (ydata - cur_ylim[0])*scale_factor,
-                         ydata + (cur_ylim[1] - ydata)*scale_factor])
-            # Force redraw
-            self.figure.canvas.draw()
-
-        # Get the figure of interest
-        fig = ax.get_figure()
-        # Attach the call back
-        fig.canvas.mpl_connect('scroll_event', zoom_fun)
-
-        # Return the function
-        return zoom_fun
+                             with_labels=False)
+        self.canvas.Refresh()
