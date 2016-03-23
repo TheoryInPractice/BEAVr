@@ -21,10 +21,10 @@ class TestDecompositionGenerator(unittest.TestCase):
         # Make four color sets of size p
         sets = self.decomp_generator.four_color_sets(set(self.coloring), p)
         # Assert that we got four sets
-        self.assertEquals(len(sets), 4)
+        self.assertEquals(len(sets), 4, msg='Wrong number of sets returned')
         # Assert that each set has size p
         for s in sets:
-            self.assertEquals(len(s), p)
+            self.assertEquals(len(s), p, msg='Wrong number of colors in a set')
 
     def tearDown(self):
         """Cleans up after tests are run"""
