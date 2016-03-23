@@ -38,6 +38,21 @@ class TestDecompositionGenerator(unittest.TestCase):
         self.assertEquals(comps[0].edges(), [(0, 1), (1, 2)],
                 msg='Wrong edge set')
 
+        # Get the components on set {0, 1, 5}
+        cs = {0, 1, 5}
+        comps = self.decomp_generator.get_connected_components(cs)
+        # Assert that we have two components on this color set
+        self.assertEquals(len(comps), 2, msg='Wrong number of components')
+        # Assert that component 0 has vertices [0, 1]
+        self.assertEquals(comps[0].nodes(), [0, 1], msg='Wrong vertex set')
+        # Assert that it has edges [(0, 1)]
+        self.assertEquals(comps[0].edges(), [(0, 1)],
+                msg='Wrong edge set')
+        # Assert that component 1 has vertices [5]
+        self.assertEquals(comps[1].nodes(), [5], msg='Wrong vertex set')
+        # Assert that it has no edges
+        self.assertEquals(comps[1].edges(), [], msg='Wrong edge set')
+
     def tearDown(self):
         """Cleans up after tests are run"""
 
