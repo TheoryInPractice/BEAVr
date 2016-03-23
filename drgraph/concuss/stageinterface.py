@@ -8,10 +8,6 @@ import networkx as nx
 import matplotlib
 matplotlib.use('WXAgg')
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_wxagg import (
-    FigureCanvasWxAgg as FigureCanvas,
-    NavigationToolbar2WxAgg as NavigationToolbar
-)
 from matplotlib.figure import Figure
 
 from drgraph.stageinterface import StageInterface, StageVisualizer, MatplotlibVisualizer
@@ -193,12 +189,6 @@ class ColorVisualizer(MatplotlibVisualizer):
         self.graph = nx.Graph()
         self.layout = []
 
-        self.toolbar = NavigationToolbar(self.canvas)
-        self.toolbar.pan()
-        self.toolbar.Hide()
-
-        self.Fit()
-
         self.canvas.Bind(wx.EVT_PAINT, self.on_paint)
 
     def on_paint(self, evt):
@@ -321,12 +311,6 @@ class DecomposeVisualizer(MatplotlibVisualizer):
         self.graphs = []
         self.layouts = []
         self.grid = {}
-
-        self.toolbar = NavigationToolbar(self.canvas)
-        self.toolbar.pan()
-        self.toolbar.Hide()
-
-        self.Fit()
 
     def set_graph(self, graph, pattern, coloring, palette_name='brewer'):
         """Set the graph to display"""

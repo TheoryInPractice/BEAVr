@@ -2,7 +2,10 @@ from abc import ABCMeta, abstractmethod
 
 import wx
 import matplotlib
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
+from matplotlib.backends.backend_wxagg import (
+    FigureCanvasWxAgg as FigureCanvas,
+    NavigationToolbar2WxAgg as NavigationToolbar
+)
 
 class StageInterface(wx.Panel):
     """
@@ -98,6 +101,12 @@ class MatplotlibVisualizer(StageVisualizer):
         self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
         self.SetSizer(self.sizer)
+
+        self.toolbar = NavigationToolbar(self.canvas)
+        self.toolbar.pan()
+        self.toolbar.Hide()
+
+        self.Fit()
 
         self.zoomer = self.zoom_factory(self.axes, base_scale=1.5)
 
