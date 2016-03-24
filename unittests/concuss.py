@@ -53,6 +53,20 @@ class TestDecompositionGenerator(unittest.TestCase):
         # Assert that it has no edges
         self.assertEquals(comps[1].edges(), [], msg='Wrong edge set')
 
+    def test_get_tree_layout(self):
+        # Get a tree layout of the whole original graph
+        layout = self.decomp_generator.get_tree_layout(self.graph)
+        # Assert that all the vertices lie within the rectangle [0.05, 0.95]^2
+        for point in layout.values():
+            self.assertTrue(point[0] >= 0.05,
+                    msg='point[0] too small ({0})'.format(point[0]))
+            self.assertTrue(point[0] <= 0.95,
+                    msg='point[0] too large ({0})'.format(point[0]))
+            self.assertTrue(point[1] >= 0.05,
+                    msg='point[1] too small ({0})'.format(point[1]))
+            self.assertTrue(point[1] <= 0.95,
+                    msg='point[1] too large ({0})'.format(point[1]))
+
     def tearDown(self):
         """Cleans up after tests are run"""
 
