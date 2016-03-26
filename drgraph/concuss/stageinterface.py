@@ -81,30 +81,37 @@ class DecomposeInterface(StageInterface):
         self.set_visualization(vis)
         self.vis.set_graph(graph, pattern, coloring)
 
-        # Set one button
-        one_bmp = self.color_set_icon(0)
-        one = self.tb.AddLabelTool(wx.NewId(), "Color set one", one_bmp)
-        self.Bind(wx.EVT_TOOL, self.on_one, one)
-
-        # Set two button
-        two_bmp = self.color_set_icon(1)
-        two = self.tb.AddLabelTool(wx.NewId(), "Color set two", two_bmp)
-        self.Bind(wx.EVT_TOOL, self.on_two, two)
-
-        # Set three button
-        three_bmp = self.color_set_icon(2)
-        three = self.tb.AddLabelTool(wx.NewId(), "Color set three", three_bmp)
-        self.Bind(wx.EVT_TOOL, self.on_three, three)
-
-        # Set four button
-        four_bmp = self.color_set_icon(3)
-        four = self.tb.AddLabelTool(wx.NewId(), "Color set four", four_bmp)
-        self.Bind(wx.EVT_TOOL, self.on_four, four)
-
-        # Not needed until we get something below it
-        #self.tb.AddSeparator()
+        self.id_color_mapping = {}
+        self.color_set = set()
+        for color in set(coloring):
+            new_id = wx.NewId()
+            self.id_color_mapping[new_id] = color
+            bmp = self.color_icon(color)
+            btn = self.tb.AddCheckLabelTool(new_id, "Color {0}".format(color),
+                    bmp)
+            self.Bind(wx.EVT_TOOL, self.on_color_tool, btn)
 
         self.tb.Realize()
+
+    def color_icon(self, color):
+        """Create an icon for the given color"""
+        # Create the bitmap
+        icon = wx.EmptyBitmap(*self.tb_size)
+        # Create a DC to draw on the bitmap
+        dc = wx.MemoryDC()
+        dc.SelectObject(icon)
+        # Draw on the bitmap using the DC
+        dc.Clear()
+        dc.SetPen(wx.Pen(wx.BLACK, 1))
+        # Prepare to draw in the right color
+        rgb = [int(channel * 255) for channel in
+                self.vis.palette[color%len(self.vis.palette)]]
+        dc.SetBrush(wx.Brush(wx.Colour(*rgb)))
+        # Draw the square
+        dc.DrawRectangle(0, 0, self.tb_size[0], self.tb_size[1])
+        # Select the null bitmap to flush all changes to icon
+        dc.SelectObject(wx.NullBitmap)
+        return icon
 
     def color_set_icon(self, index):
         """Create an icon for the given color set index"""
@@ -137,6 +144,12 @@ class DecomposeInterface(StageInterface):
         # Select the null bitmap to flush all changes to icon
         dc.SelectObject(wx.NullBitmap)
         return icon
+
+    def on_color_tool(self, e):
+        """Add or remove the selected color from the current set"""
+        color = self.id_color_mapping[e.GetId()]
+        self.color_set ^= {color}
+        self.vis.update_graph_display(self.color_set)
 
     def on_one(self, e):
         """Show the decompositions for color set one"""
@@ -340,13 +353,17 @@ class DecomposeVisualizer(MatplotlibVisualizer):
             #     print 'Edges:', cc.edges()
             #     print 'Coloring:', [self.coloring[node] for node in cc.nodes()]
 
-        self.update_graph_display()
+        self.update_graph_display(set())
 
-    def update_graph_display(self):
+    def update_graph_display(self, color_set):
+        """Update the displayed graph"""
+        # Compute what we need for the current color set
+        cc_list = self.DG.get_connected_components(color_set)
+        layout = self.DG.get_tree_layouts(cc_list, self.coloring)
+        # Draw the graph
         self.axes.clear()
         self.axes.set_axis_bgcolor((.8,.8,.8))
-        for cc, layout in zip(self.components[self.graph_index],
-                              self.layouts[self.graph_index]):
+        for cc, layout in zip(cc_list, layout):
             comp_colors = [self.mapped_coloring[node] for node in cc.nodes()]
             nx.draw_networkx(cc, layout, ax=self.axes, node_color=comp_colors,
                              with_labels=False)
