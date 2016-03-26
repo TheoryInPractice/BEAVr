@@ -325,9 +325,6 @@ class DecomposeVisualizer(MatplotlibVisualizer):
         super(DecomposeVisualizer, self).__init__(parent)
 
         self.graph = nx.Graph()
-        self.graphs = []
-        self.layouts = []
-        self.grid = {}
 
     def set_graph(self, graph, pattern, coloring, palette_name='brewer'):
         """Set the graph to display"""
@@ -340,22 +337,6 @@ class DecomposeVisualizer(MatplotlibVisualizer):
         self.mapped_coloring = map_coloring(self.palette, self.coloring)
 
         self.DG = DecompositionGenerator(self.graph, self.coloring)
-
-        self.components = []
-        self.layouts = []
-        
-        self.color_sets = self.DG.four_color_sets(set(self.coloring), len(pattern))
-
-        for cs in self.color_sets:
-            cc_list = self.DG.get_connected_components(cs)
-            self.components.append(cc_list)
-            # print '\n\nColor set:', cs
-            # print 'Mapped color set:', [self.palette[c] for c in cs]
-            self.layouts.append(self.DG.get_tree_layouts(cc_list, self.coloring))
-            # for cc in cc_list:
-            #     print '\nNodes:', cc.nodes()
-            #     print 'Edges:', cc.edges()
-            #     print 'Coloring:', [self.coloring[node] for node in cc.nodes()]
 
         self.update_graph_display(set())
 
