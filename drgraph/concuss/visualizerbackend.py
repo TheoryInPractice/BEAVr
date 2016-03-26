@@ -118,33 +118,3 @@ class DecompositionGenerator(object):
         # Root field for use in recursive case to connect tree and subtree
         tree.root = root
         return tree
-    
-    def four_color_sets(self, C, p):
-        # We want at least a few extra colors
-        assert p <= len(C) - 3, 'p too large for C'
-        # Randomly permute C
-        Cs = random.permutation(sorted(C)).tolist()
-        # Make an empty set for our output
-        sets = []
-        # If we have a lot of colors, do something nice
-        if 2 * p + 1 <= len(C):
-            # First $p$ colors
-            sets.append(frozenset(Cs[:p]))
-            # Next $p$ colors
-            sets.append(frozenset(Cs[p:2*p]))
-            # Overlap those two sets
-            sets.append(frozenset(Cs[p//2:3*p//2]))
-            # First $p-1$ colors, and one unique color
-            sets.append(frozenset(Cs[:p-1] + [Cs[2*p]]))
-        # If we don't have a lot of colors, do a cramped version of the same thing
-        else:
-            # First $p$ colors
-            sets.append(frozenset(Cs[:p]))
-            # Last $p$ colors
-            sets.append(frozenset(Cs[-p:]))
-            # Overlap those two sets
-            sets.append(frozenset(Cs[(len(C)-p)//2:(p-len(C))//2]))
-            # First $p-1$ colors, and last color
-            sets.append(frozenset(Cs[:p-1] + [Cs[-1]]))
-
-        return sets

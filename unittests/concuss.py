@@ -16,16 +16,6 @@ class TestDecompositionGenerator(unittest.TestCase):
         self.decomp_generator = visualizerbackend.DecompositionGenerator(
                 self.graph, self.coloring)
 
-    def test_four_color_sets(self):
-        p = 3
-        # Make four color sets of size p
-        sets = self.decomp_generator.four_color_sets(set(self.coloring), p)
-        # Assert that we got four sets
-        self.assertEqual(len(sets), 4, msg='Wrong number of sets returned')
-        # Assert that each set has size p
-        for s in sets:
-            self.assertEqual(len(s), p, msg='Wrong number of colors in a set')
-
     def test_get_connected_components(self):
         # Get the components on set {0, 1, 2}
         cs = {0, 1, 2}

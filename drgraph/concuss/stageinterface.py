@@ -114,38 +114,6 @@ class DecomposeInterface(StageInterface):
         dc.SelectObject(wx.NullBitmap)
         return icon
 
-    def color_set_icon(self, index):
-        """Create an icon for the given color set index"""
-        color_set = sorted(self.vis.color_sets[index])
-        # Create the bitmap
-        icon = wx.EmptyBitmap(*self.tb_size)
-        # Create a DC to draw on the bitmap
-        dc = wx.MemoryDC()
-        dc.SelectObject(icon)
-        # Draw on the bitmap using the DC
-        dc.Clear()
-        dc.SetPen(wx.Pen(wx.BLACK, 1))
-        assert self.tb_size[0] == self.tb_size[1], "Assume square icons"
-        # Calculate dimensions of the squares and grid
-        tb_size = self.tb_size[0]
-        grid_len = int(math.ceil(math.sqrt(len(color_set))))
-        grid_size = tb_size // grid_len
-        # Draw each square
-        for color in color_set:
-            # Prepare to draw in the right color
-            rgb = [int(channel * 255) for channel in
-                    self.vis.palette[color%len(self.vis.palette)]]
-            dc.SetBrush(wx.Brush(wx.Colour(*rgb)))
-            # Calculate where the square should be located
-            grid_x = color_set.index(color) % grid_len
-            grid_y = color_set.index(color) / grid_len
-            # Draw the square
-            dc.DrawRectangle(grid_x*grid_size, grid_y*grid_size, grid_size,
-                    grid_size)
-        # Select the null bitmap to flush all changes to icon
-        dc.SelectObject(wx.NullBitmap)
-        return icon
-
     def on_color_tool(self, e):
         """Add or remove the selected color from the current set"""
         # Get the color corresponding to the button that was clicked
@@ -154,26 +122,6 @@ class DecomposeInterface(StageInterface):
         self.color_set ^= {color}
         # Update the graph display
         self.vis.update_graph_display(self.color_set)
-
-    def on_one(self, e):
-        """Show the decompositions for color set one"""
-        self.vis.graph_index = 0
-        self.vis.update_graph_display()
-            
-    def on_two(self, e):
-        """Show the decompositions for color set two"""
-        self.vis.graph_index = 1
-        self.vis.update_graph_display()
-
-    def on_three(self, e):
-        """Show the decompositions for color set three"""
-        self.vis.graph_index = 2
-        self.vis.update_graph_display()
-
-    def on_four(self, e):
-        """Show the decompositions for color set four"""
-        self.vis.graph_index = 3
-        self.vis.update_graph_display()
 
 
 class CountInterface(StageInterface):
@@ -328,7 +276,6 @@ class DecomposeVisualizer(MatplotlibVisualizer):
 
     def set_graph(self, graph, pattern, coloring, palette_name='brewer'):
         """Set the graph to display"""
-        self.graph_index = 0
         self.pattern = pattern
 
         self.graph = graph
