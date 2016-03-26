@@ -27,12 +27,12 @@ class DecompositionGenerator(object):
             if color in color_set:
                 vertices.add(index)
 
-        return list(nx.connected_component_subgraphs( self.graph.subgraph(vertices) ))
+        return list(nx.connected_component_subgraphs(self.graph.subgraph(vertices)))
 
-    def get_tree_layouts( self, connected_components, coloring ):
+    def get_tree_layouts(self, connected_components, coloring):
         layouts = []
         for connected_component in connected_components:
-            layouts.append( self.get_tree_layout(connected_component) )
+            layouts.append(self.get_tree_layout(connected_component))
 
         # Calculate offset
         y_offset = 0
@@ -50,9 +50,9 @@ class DecompositionGenerator(object):
 
         return layouts
 
-    def get_tree_layout( self, connected_component ):
+    def get_tree_layout(self, connected_component):
         layout = None
-        tree = self.get_underlying_tree( connected_component )
+        tree = self.get_underlying_tree(connected_component)
         try:
             # Nice circular layout if you have graphviz
             from networkx.drawing.nx_agraph import graphviz_layout
@@ -98,7 +98,7 @@ class DecompositionGenerator(object):
                     center=(0.5, 0.5))
         return layout
 
-    def get_underlying_tree( self, connected_component ):
+    def get_underlying_tree(self, connected_component):
         # Find the root (color with only one occurrence)
         root = None
         colors = [self.coloring[node] for node in connected_component.nodes()]
@@ -116,17 +116,17 @@ class DecompositionGenerator(object):
 
         # Create a new NetworkX graph to represent the tree
         tree = nx.Graph()
-        tree.add_node( root )
+        tree.add_node(root)
 
         # Remove the root from the connected component
         connected_component = nx.Graph(connected_component)
-        connected_component.remove_node( root )
+        connected_component.remove_node(root)
 
         # Every new connected component is a subtree
-        for sub_cc in nx.connected_component_subgraphs( connected_component ):
+        for sub_cc in nx.connected_component_subgraphs(connected_component):
             subtree = self.get_underlying_tree(sub_cc)
-            tree = nx.compose( tree, subtree )
-            tree.add_edge( root, subtree.root )
+            tree = nx.compose(tree, subtree)
+            tree.add_edge(root, subtree.root)
 
         # Root field for use in recursive case to connect tree and subtree
         tree.root = root

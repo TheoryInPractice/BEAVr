@@ -322,7 +322,7 @@ class DecomposeVisualizer(MatplotlibVisualizer):
         self.coloring = coloring
         self.mapped_coloring = map_coloring(self.palette, self.coloring)
 
-        self.DG = DecompositionGenerator( self.graph, self.coloring )
+        self.DG = DecompositionGenerator(self.graph, self.coloring)
 
         self.components = []
         self.layouts = []
