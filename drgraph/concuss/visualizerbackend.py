@@ -4,6 +4,8 @@ from numpy import random
 import networkx as nx
 
 class DecompositionGenerator(object):
+    layout_margin = 0.05
+
     def __init__(self, graph, coloring):
         self.graph = graph
         self.coloring = coloring
@@ -38,7 +40,7 @@ class DecompositionGenerator(object):
         grid_len = int(math.ceil(math.sqrt(len(layouts))))
         # TODO: Find a good value for this
         for layout in layouts:
-            grid_size = 10
+            grid_size = 1
             for index in layout:
                 layout[index] = [layout[index][0] + x_offset, layout[index][1] + y_offset]
             x_offset += grid_size
@@ -54,10 +56,46 @@ class DecompositionGenerator(object):
         try:
             # Nice circular layout if you have graphviz
             from networkx.drawing.nx_agraph import graphviz_layout
-            layout = graphviz_layout(tree,prog='twopi',root=str(tree.root),args='-Gsize="2,2"')
+            layout = graphviz_layout(tree, prog='twopi', root=str(tree.root))
+
+            # Scale to fit grid, since twopi seems to ignore the size option
+            min_x = min(pos[0] for pos in layout.values())
+            max_x = max(pos[0] for pos in layout.values())
+            min_y = min(pos[1] for pos in layout.values())
+            max_y = max(pos[1] for pos in layout.values())
+
+            # Re-center to the origin
+            center_x = min_x + (max_x - min_x) / 2
+            center_y = min_y + (max_y - min_y) / 2
+            for vert, pos in layout.iteritems():
+                pos = list(pos)
+                pos[0] -= center_x
+                pos[1] -= center_y
+                layout[vert] = pos
+            # Update extents
+            min_x -= center_x
+            max_x -= center_x
+            min_y -= center_y
+            max_y -= center_y
+
+            # Scale and shift to fit the desired bounding box
+            try:
+                x_scale = (-0.5 + self.layout_margin + 0.005) / min_x
+            except ZeroDivisionError:
+                x_scale = 1
+            try:
+                y_scale = (-0.5 + self.layout_margin + 0.005) / min_y
+            except ZeroDivisionError:
+                y_scale = 1
+            for vert, pos in layout.iteritems():
+                pos[0] *= x_scale
+                pos[1] *= y_scale
+                pos[0] += 0.5
+                pos[1] += 0.5
         except ImportError:
             # Spring layout if you do not have grahpviz
-            layout = nx.spring_layout(tree)
+            layout = nx.spring_layout(tree, scale=1-2*self.layout_margin-0.01,
+                    center=(0.5, 0.5))
         return layout
 
     def get_underlying_tree( self, connected_component ):
