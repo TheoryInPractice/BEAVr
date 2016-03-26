@@ -45,8 +45,6 @@ class ColorInterface(StageInterface):
 
         self.tb.Realize()
 
-
-
         vis = ColorVisualizer(self)
         self.set_visualization(vis)
 
@@ -81,8 +79,11 @@ class DecomposeInterface(StageInterface):
         self.set_visualization(vis)
         self.vis.set_graph(graph, pattern, coloring)
 
+        # Mapping from button IDs to colors
         self.id_color_mapping = {}
+        # The current color set
         self.color_set = set()
+        # Add buttons for all our colors
         for color in set(coloring):
             new_id = wx.NewId()
             self.id_color_mapping[new_id] = color
@@ -147,8 +148,11 @@ class DecomposeInterface(StageInterface):
 
     def on_color_tool(self, e):
         """Add or remove the selected color from the current set"""
+        # Get the color corresponding to the button that was clicked
         color = self.id_color_mapping[e.GetId()]
+        # Add or remove the color from the color set
         self.color_set ^= {color}
+        # Update the graph display
         self.vis.update_graph_display(self.color_set)
 
     def on_one(self, e):

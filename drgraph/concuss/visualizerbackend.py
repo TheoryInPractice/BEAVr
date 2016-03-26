@@ -64,34 +64,21 @@ class DecompositionGenerator(object):
             min_y = min(pos[1] for pos in layout.values())
             max_y = max(pos[1] for pos in layout.values())
 
-            # Re-center to the origin
             center_x = min_x + (max_x - min_x) / 2
             center_y = min_y + (max_y - min_y) / 2
-            for vert, pos in layout.iteritems():
-                pos = list(pos)
-                pos[0] -= center_x
-                pos[1] -= center_y
-                layout[vert] = pos
-            # Update extents
-            min_x -= center_x
-            max_x -= center_x
-            min_y -= center_y
-            max_y -= center_y
-
-            # Scale and shift to fit the desired bounding box
+            # Re-center, scale and shift to fit the desired bounding box
             try:
-                x_scale = (-0.5 + self.layout_margin + 0.005) / min_x
+                x_scale = (0.5 - self.layout_margin - 0.005) / (center_x - min_x)
             except ZeroDivisionError:
                 x_scale = 1
             try:
-                y_scale = (-0.5 + self.layout_margin + 0.005) / min_y
+                y_scale = (0.5 - self.layout_margin - 0.005) / (center_y - min_y)
             except ZeroDivisionError:
                 y_scale = 1
             for vert, pos in layout.iteritems():
-                pos[0] *= x_scale
-                pos[1] *= y_scale
-                pos[0] += 0.5
-                pos[1] += 0.5
+                layout[vert] = ((pos[0] - center_x) * x_scale + 0.5,
+                        (pos[1] - center_y) * y_scale + 0.5)
+
         except ImportError:
             # Spring layout if you do not have grahpviz
             layout = nx.spring_layout(tree, scale=1-2*self.layout_margin-0.01,
