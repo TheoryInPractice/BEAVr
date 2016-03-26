@@ -44,7 +44,7 @@ class DecompositionGenerator(object):
             for index in layout:
                 layout[index] = [layout[index][0] + x_offset, layout[index][1] + y_offset]
             x_offset += grid_size
-            if x_offset > grid_len*grid_size:
+            if x_offset >= grid_len*grid_size:
                 x_offset = 0
                 y_offset += grid_size
 
