@@ -97,10 +97,11 @@ class DecomposeInterface(StageInterface):
     def color_icon(self, color):
         """Create an icon for the given color"""
         # Create the bitmap
-        icon = wx.EmptyBitmapRGBA(*self.tb_size)
+        icon = wx.EmptyBitmap(*self.tb_size)
         # Create a DC to draw on the bitmap
         dc = wx.MemoryDC()
         dc.SelectObject(icon)
+        dc.Clear()
         # Draw on the bitmap using the DC
         dc.SetPen(wx.Pen(wx.BLACK, 1))
         # Prepare to draw in the right color
@@ -111,6 +112,9 @@ class DecomposeInterface(StageInterface):
         dc.DrawRectangle(5, 5, self.tb_size[0]-10, self.tb_size[1]-10)
         # Select the null bitmap to flush all changes to icon
         dc.SelectObject(wx.NullBitmap)
+        # Make the white parts of the icon transparent
+        mask = wx.Mask(icon, wx.WHITE)
+        icon.SetMask(mask)
         return icon
 
     def on_color_tool(self, e):
