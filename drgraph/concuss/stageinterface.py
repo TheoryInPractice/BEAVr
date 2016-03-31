@@ -3,6 +3,7 @@ import os
 import os.path as path
 
 import wx
+from wx.lib.scrolledpanel import ScrolledPanel
 from numpy import random
 import networkx as nx
 import matplotlib
@@ -145,6 +146,25 @@ class CombineInterface(wx.Panel):
     def __init__(self, parent):
         """Fill the empty GUI elements with combination-specific widgets"""
         super(CombineInterface, self).__init__(parent)
+
+        # Make the sizer
+        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        # Add the ListBook
+        self.listbook = wx.Listbook(self, wx.NewId(), style=wx.BK_TOP)
+        self.sizer.Add(self.listbook, 1, wx.EXPAND)
+        dummypanel = CombinePage(self, -1)
+        self.add_tab(dummypanel)
+        dummypanel2 = CombinePage(self, -1)
+        self.add_tab(dummypanel2)
+
+        # We want to see what's in the sizer
+        self.SetSizer(self.sizer)
+
+    def add_tab(self, tab):
+        """Add a new tab to the Listbook with an appropriate label"""
+        # TODO: In the future we will have no text and an icon
+        self.listbook.AddPage(tab, tab.text)
 
 
 class ColorVisualizer(MatplotlibVisualizer):
@@ -303,3 +323,59 @@ class DecomposeVisualizer(MatplotlibVisualizer):
             nx.draw_networkx(cc, layout, ax=self.axes, node_color=comp_colors,
                              with_labels=False)
         self.canvas.Refresh()
+
+class CombinePage(wx.Panel):
+    """A single page of the CombineInterface's Listbook"""
+
+    text = 'THIS NEEDS TO BE CHANGED'
+
+    def __init__(self, parent, id):
+        super(CombinePage, self).__init__(parent, id)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        self.scrolledpanel = ScrolledPanel(self, -1)
+
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+        text = wx.StaticText(self.scrolledpanel, -1, """Here's some text
+                long text
+                longer text
+                make it really long
+                long text
+                longer text
+                make it really long
+                long text
+                longer text
+                make it really long
+                long text
+                longer text
+                make it really long
+                long text
+                longer text
+                make it really long
+                long text
+                longer text
+                make it really long
+                long text
+                longer text
+                make it really long
+                long text
+                longer text
+                make it really long
+                long text
+                longer text
+                make it really long
+                long text
+                longer text
+                make it really long
+                """)
+        self.sizer.Add(text, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+
+        self.scrolledpanel.SetSizer(self.sizer)
+
+        sizer.Add(self.scrolledpanel, 1, wx.EXPAND)
+        self.SetSizer(sizer)
+
+        self.scrolledpanel.SetAutoLayout(1)
+        self.scrolledpanel.SetupScrolling()
