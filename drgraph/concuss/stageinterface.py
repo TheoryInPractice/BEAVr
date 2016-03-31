@@ -344,39 +344,8 @@ class CombinePage(wx.Panel):
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
-        text = wx.StaticText(self.scrolledpanel, -1, """Here's some text
-                long text
-                longer text
-                make it really long
-                long text
-                longer text
-                make it really long
-                long text
-                longer text
-                make it really long
-                long text
-                longer text
-                make it really long
-                long text
-                longer text
-                make it really long
-                long text
-                longer text
-                make it really long
-                long text
-                longer text
-                make it really long
-                long text
-                longer text
-                make it really long
-                long text
-                longer text
-                make it really long
-                long text
-                longer text
-                make it really long
-                """)
-        self.sizer.Add(text, 0, wx.ALIGN_LEFT|wx.ALL, 5)
+        inexterm = InExTermWidget(self)
+        self.sizer.Add(inexterm, 1, wx.EXPAND)
 
         self.scrolledpanel.SetSizer(self.sizer)
         self.scrolledpanel.SetAutoLayout(1)
@@ -384,3 +353,61 @@ class CombinePage(wx.Panel):
 
         outersizer.Add(self.scrolledpanel, 1, wx.EXPAND)
         self.SetSizer(outersizer)
+
+class InExTermWidget(wx.Panel):
+    """A GUI widget one term of the inclusion-exclusion equation"""
+
+    def __init__(self, parent):
+        super(InExTermWidget, self).__init__(parent, -1)
+
+        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        # Add the first text
+        text = wx.StaticText(self, -1, "temporary")
+        self.sizer.Add(text, 0, wx.EXPAND)
+
+        # Add the color set widgets
+        self.color_set_sizer = wx.WrapSizer(wx.HORIZONTAL)
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.color_set_sizer.Add(ColorSetWidget(self))
+        self.sizer.Add(self.color_set_sizer, 1, wx.EXPAND)
+
+        # Add the second text
+        text2 = wx.StaticText(self, -1, "=temporary")
+        self.sizer.Add(text2, 0, wx.EXPAND)
+
+        # Set the sizer
+        self.SetSizer(self.sizer)
+        self.SetBackgroundColour(wx.Colour(255, 0, 0))
+
+class ColorSetWidget(wx.Panel):
+    """A GUI widget for one set of colors"""
+
+    def __init__(self, parent):
+        super(ColorSetWidget, self).__init__(parent)
+        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        text = wx.StaticText(self, -1, "temporary")
+        self.sizer.Add(text)
+        self.SetSizer(self.sizer)
+        self.SetBackgroundColour(wx.Colour(0, 255, 0))
