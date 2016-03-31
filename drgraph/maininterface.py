@@ -6,7 +6,11 @@ from zipfile import BadZipfile
 import wx
 import networkx as nx
 
-from drgraph.concuss.stageinterface import ColorInterface, DecomposeInterface
+from drgraph.concuss.stageinterface import (
+    ColorInterface,
+    DecomposeInterface,
+    CombineInterface
+)
 from drgraph.stageinterface import DummyStageInterface
 from drgraph.dataloader import DataLoaderFactory, UnknownPipelineError
 
@@ -155,6 +159,8 @@ class MainInterface(wx.Frame):
                     dl.pattern, dl.colorings[-1])
             self.add_tab(decomposeStage)
             #decomposeStage.vis.set_graph(dl.graph, dl.pattern, dl.colorings[-1])
+            combineStage = CombineInterface(self.notebook)
+            self.add_tab(combineStage)
 
     def OnQuit(self, e):
         """Quit the application"""

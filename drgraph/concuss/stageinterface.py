@@ -137,7 +137,7 @@ class CountInterface(StageInterface):
         super(CountInterface, self).__init__(parent)
 
 
-class CombineInterface(StageInterface):
+class CombineInterface(wx.Panel):
     """GUI elements for CONCUSS combination stage visualization"""
 
     name = "Combine"
