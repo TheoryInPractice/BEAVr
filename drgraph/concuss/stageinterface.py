@@ -325,16 +325,22 @@ class DecomposeVisualizer(MatplotlibVisualizer):
         self.canvas.Refresh()
 
 class CombinePage(wx.Panel):
-    """A single page of the CombineInterface's Listbook"""
+    """
+    A single page of the CombineInterface's Listbook
+
+    It is very important that this is a wx.Panel with a sizer which contains
+    the ScrolledPanel.  Otherwise, the ScrolledPanel will not have a scroll
+    bar, though it is still possible to scroll using the scroll wheel.
+    """
 
     text = 'THIS NEEDS TO BE CHANGED'
 
     def __init__(self, parent, id):
         super(CombinePage, self).__init__(parent, id)
 
-        sizer = wx.BoxSizer(wx.VERTICAL)
+        outersizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.scrolledpanel = ScrolledPanel(self, -1)
+        self.scrolledpanel = ScrolledPanel(self, -1, style=wx.TAB_TRAVERSAL)
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -373,9 +379,8 @@ class CombinePage(wx.Panel):
         self.sizer.Add(text, 0, wx.ALIGN_LEFT|wx.ALL, 5)
 
         self.scrolledpanel.SetSizer(self.sizer)
-
-        sizer.Add(self.scrolledpanel, 1, wx.EXPAND)
-        self.SetSizer(sizer)
-
         self.scrolledpanel.SetAutoLayout(1)
-        self.scrolledpanel.SetupScrolling()
+        self.scrolledpanel.SetupScrolling(scroll_x=False)
+
+        outersizer.Add(self.scrolledpanel, 1, wx.EXPAND)
+        self.SetSizer(outersizer)
