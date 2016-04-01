@@ -156,10 +156,11 @@ class MainInterface(wx.Frame):
             colorStage.vis.set_graph(dl.graph, dl.colorings)
             # Temporary: For open house 
             decomposeStage = DecomposeInterface(self.notebook, dl.graph,
-                    dl.pattern, dl.colorings[-1])
+                    dl.colorings[-1])
             self.add_tab(decomposeStage)
             #decomposeStage.vis.set_graph(dl.graph, dl.pattern, dl.colorings[-1])
-            combineStage = CombineInterface(self.notebook)
+            colorings = [[j+i for j in range(len(dl.pattern.nodes()))] for i in range(4)]
+            combineStage = CombineInterface(self.notebook, dl.pattern, colorings)
             self.add_tab(combineStage)
 
     def OnQuit(self, e):

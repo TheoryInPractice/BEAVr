@@ -4,7 +4,7 @@ import os.path as path
 
 import wx
 from wx.lib.scrolledpanel import ScrolledPanel
-from numpy import random
+from numpy import random, fromstring, uint8
 import networkx as nx
 import matplotlib
 matplotlib.use('WXAgg')
@@ -72,13 +72,13 @@ class DecomposeInterface(StageInterface):
 
     name = "Decompose"
 
-    def __init__(self, parent, graph, pattern, coloring):
+    def __init__(self, parent, graph, coloring):
         """Fill the empty GUI elements with decomposition-specific widgets"""
         super(DecomposeInterface, self).__init__(parent)
 
         vis = DecomposeVisualizer(self)
         self.set_visualization(vis)
-        self.vis.set_graph(graph, pattern, coloring)
+        self.vis.set_graph(graph, coloring)
 
         # Mapping from button IDs to colors
         self.id_color_mapping = {}
@@ -143,9 +143,12 @@ class CombineInterface(wx.Panel):
 
     name = "Combine"
 
-    def __init__(self, parent):
+    def __init__(self, parent, pattern, colorings):
         """Fill the empty GUI elements with combination-specific widgets"""
         super(CombineInterface, self).__init__(parent)
+
+        self.pattern = pattern
+        self.colorings =  colorings
 
         # Make the sizer
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -153,18 +156,67 @@ class CombineInterface(wx.Panel):
         # Add the ListBook
         self.listbook = wx.Listbook(self, wx.NewId(), style=wx.BK_TOP)
         self.sizer.Add(self.listbook, 1, wx.EXPAND)
-        dummypanel = CombinePage(self, -1)
-        self.add_tab(dummypanel)
-        dummypanel2 = CombinePage(self, -1)
-        self.add_tab(dummypanel2)
+        
+        # Add a tab for each coloring
+        self.add_tabs()
 
         # We want to see what's in the sizer
         self.SetSizer(self.sizer)
 
-    def add_tab(self, tab):
+    def add_tabs(self, palette_name='brewer'):
         """Add a new tab to the Listbook with an appropriate label"""
-        # TODO: In the future we will have no text and an icon
-        self.listbook.AddPage(tab, tab.text)
+        self.palette = load_palette(palette_name)
+        self.mapped_colorings = map_colorings(self.palette, self.colorings)
+        self.pos = None
+        icons = [self.get_icon(coloring) for coloring in self.mapped_colorings]
+        icons.append(self.get_total_icon())
+        il = wx.ImageList(self.w, self.h)
+        self.add_image_list(icons)
+        for i in range(len(icons)):
+            tab = CombinePage(self, -1)
+            self.listbook.AddPage(tab, '', imageId=i)
+
+
+    def add_image_list(self, icons):
+        """Take in list of images and assign them to a wx.ImageList"""
+        il = wx.ImageList(self.w, self.h)
+        for icon in icons:
+            il.Add(icon)
+        self.listbook.AssignImageList(il)
+
+    def get_icon(self, coloring):
+        """Take in NetworkX graph and coloring and create bipmap icon"""
+        if self.pos is None:
+            self.pos = nx.spring_layout(self.pattern)
+        fig = plt.figure(figsize=(1,1))
+        ax = plt.Axes(fig, [0,0,1,1])#fig.add_subplot(111)
+        ax.set_axis_off()
+        fig.add_axes(ax)
+        nx.draw(self.pattern, pos=self.pos, ax=ax, node_color=coloring)
+        canvas = fig.canvas
+        canvas.draw()
+        s = canvas.tostring_rgb()
+
+        l,b,w,h = fig.bbox.bounds
+        self.w = int(w)
+        self.h = int(h)
+        X = fromstring(s, uint8)
+
+        icon = wx.BitmapFromBuffer(self.w,self.h,X)
+        plt.close()
+        return icon
+
+    def get_total_icon(self):
+        icon = wx.EmptyBitmap(self.w,self.h)
+        dc = wx.MemoryDC()
+        dc.SelectObject(icon)
+        dc.Clear()
+        text= 'Total'
+        tw, th = dc.GetTextExtent(text)
+        dc.DrawText(text, (self.w-tw)/2, (self.h-th)/2)
+        dc.SelectObject(wx.NullBitmap)
+        return icon
+
 
 
 class ColorVisualizer(MatplotlibVisualizer):
@@ -297,9 +349,8 @@ class DecomposeVisualizer(MatplotlibVisualizer):
 
         self.graph = nx.Graph()
 
-    def set_graph(self, graph, pattern, coloring, palette_name='brewer'):
+    def set_graph(self, graph, coloring, palette_name='brewer'):
         """Set the graph to display"""
-        self.pattern = pattern
 
         self.graph = graph
         self.palette = load_palette(palette_name)
@@ -332,8 +383,6 @@ class CombinePage(wx.Panel):
     the ScrolledPanel.  Otherwise, the ScrolledPanel will not have a scroll
     bar, though it is still possible to scroll using the scroll wheel.
     """
-
-    text = 'THIS NEEDS TO BE CHANGED'
 
     def __init__(self, parent, id):
         super(CombinePage, self).__init__(parent, id)
