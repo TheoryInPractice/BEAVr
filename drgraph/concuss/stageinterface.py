@@ -176,7 +176,6 @@ class CombineInterface(wx.Panel):
             tab = CombinePage(self, -1)
             self.listbook.AddPage(tab, '', imageId=i)
 
-
     def add_image_list(self, icons):
         """Take in list of images and assign them to a wx.ImageList"""
         il = wx.ImageList(self.w, self.h)
@@ -189,10 +188,10 @@ class CombineInterface(wx.Panel):
         if self.pos is None:
             self.pos = nx.spring_layout(self.pattern)
         fig = plt.figure(figsize=(1,1))
-        ax = plt.Axes(fig, [0,0,1,1])#fig.add_subplot(111)
-        ax.set_axis_off()
-        fig.add_axes(ax)
-        nx.draw(self.pattern, pos=self.pos, ax=ax, node_color=coloring)
+        axes = plt.Axes(fig, [0,0,1,1])
+        axes.set_axis_off()
+        fig.add_axes(axes)
+        nx.draw(self.pattern, pos=self.pos, ax=axes, node_color=coloring)
         canvas = fig.canvas
         canvas.draw()
         s = canvas.tostring_rgb()
@@ -211,12 +210,12 @@ class CombineInterface(wx.Panel):
         dc = wx.MemoryDC()
         dc.SelectObject(icon)
         dc.Clear()
+        dc.SetFont(self.GetFont().Scaled(4))
         text= 'Total'
         tw, th = dc.GetTextExtent(text)
         dc.DrawText(text, (self.w-tw)/2, (self.h-th)/2)
         dc.SelectObject(wx.NullBitmap)
         return icon
-
 
 
 class ColorVisualizer(MatplotlibVisualizer):

@@ -159,6 +159,8 @@ class MainInterface(wx.Frame):
                     dl.colorings[-1])
             self.add_tab(decomposeStage)
             #decomposeStage.vis.set_graph(dl.graph, dl.pattern, dl.colorings[-1])
+
+            #TODO: change colorings
             colorings = [[j+i for j in range(len(dl.pattern.nodes()))] for i in range(4)]
             combineStage = CombineInterface(self.notebook, dl.pattern, colorings)
             self.add_tab(combineStage)
