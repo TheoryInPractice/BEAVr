@@ -364,14 +364,18 @@ class DecomposeVisualizer(MatplotlibVisualizer):
         """Update the displayed graph"""
         # Compute what we need for the current color set
         cc_list = self.DG.get_connected_components(color_set)
-        layout = self.DG.get_tree_layouts(cc_list, self.coloring)
+        layouts = self.DG.get_tree_layouts(cc_list, self.coloring)
         # Draw the graph
         self.axes.clear()
         self.axes.set_axis_bgcolor((.8,.8,.8))
-        for cc, layout in zip(cc_list, layout):
+        for cc, layout in zip(cc_list, layouts):
             comp_colors = [self.mapped_coloring[node] for node in cc.nodes()]
-            nx.draw_networkx(cc, layout, ax=self.axes, node_color=comp_colors,
-                             with_labels=False)
+            if cc.occ == 1:
+                nx.draw_networkx(cc, layout, ax=self.axes, node_color=comp_colors,
+                                 with_labels=False)
+            else:
+                nx.draw_networkx(cc, layout, ax=self.axes, node_color=comp_colors,
+                                 labels={cc.nodes()[0]:cc.occ})
         self.canvas.Refresh()
 
 class CombinePage(wx.Panel):

@@ -27,13 +27,27 @@ class DecompositionGenerator(object):
             if color in color_set:
                 vertices.add(index)
 
-        return list(nx.connected_component_subgraphs(self.graph.subgraph(vertices)))
+        cc_list = []
+        v_dict = {}
+        for cc in nx.connected_component_subgraphs(self.graph.subgraph(vertices)):
+            if cc.number_of_nodes() == 1:
+                color = self.coloring[cc.nodes()[0]]
+                if color in v_dict:
+                    v_dict[color].occ += 1
+                else:
+                    cc.occ = 1
+                    v_dict[color] = cc
+                    cc_list.insert(0, cc)
+            else:
+                cc.occ = 1
+                cc_list.append(cc)
+
+        return cc_list
 
     def get_tree_layouts(self, connected_components, coloring):
         layouts = []
         for connected_component in connected_components:
             layouts.append(self.get_tree_layout(connected_component))
-
         # Calculate offset
         y_offset = 0
         x_offset = 0
