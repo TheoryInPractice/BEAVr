@@ -20,29 +20,32 @@ class DecompositionGenerator(object):
         """
 
         # Make an empty set to store vertices
-        vertices = set()
+        v_set = set()
 
         # Find vertices that are colored with colors in color_set
         for index, color in enumerate(self.coloring):
             if color in color_set:
-                vertices.add(index)
+                v_set.add(index)
 
         cc_list = []
-        v_dict = {}
-        for cc in nx.connected_component_subgraphs(self.graph.subgraph(vertices)):
-            if cc.number_of_nodes() == 1:
-                color = self.coloring[cc.nodes()[0]]
-                if color in v_dict:
-                    v_dict[color].occ += 1
+        repeat_dict = {}
+        for cc in nx.connected_component_subgraphs(self.graph.subgraph(v_set)):
+            if cc.number_of_nodes() <= 2:
+                colors = frozenset([self.coloring[n] for n in cc.nodes()])
+                if colors in repeat_dict:
+                    repeat_dict[colors].occ += 1
                 else:
                     cc.occ = 1
-                    v_dict[color] = cc
-                    cc_list.insert(0, cc)
+                    repeat_dict[colors] = cc
+                    cc_list.append(cc)
             else:
                 cc.occ = 1
                 cc_list.append(cc)
 
         return cc_list
+
+    def node_match(n1, n2):
+        return self.coloring[n1] == self.coloring[n2]
 
     def get_tree_layouts(self, connected_components, coloring):
         layouts = []
