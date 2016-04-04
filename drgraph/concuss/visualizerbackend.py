@@ -28,24 +28,61 @@ class DecompositionGenerator(object):
                 v_set.add(index)
 
         cc_list = []
-        repeat_dict = {}
-        for cc in nx.connected_component_subgraphs(self.graph.subgraph(v_set)):
-            if cc.number_of_nodes() <= 2:
-                colors = frozenset([self.coloring[n] for n in cc.nodes()])
-                if colors in repeat_dict:
-                    repeat_dict[colors].occ += 1
-                else:
-                    cc.occ = 1
-                    repeat_dict[colors] = cc
-                    cc_list.append(cc)
-            else:
-                cc.occ = 1
-                cc_list.append(cc)
+        for new_cc in nx.connected_component_subgraphs(self.graph.subgraph(v_set)):
+            found = False
+            for n in new_cc.node:
+                new_cc.node[n]['color'] = self.coloring[n]
+            for i, cc in enumerate(cc_list):
+                if nx.is_isomorphic(new_cc, cc, node_match=self.nm):
+                    if new_cc.number_of_nodes() > 1:
+                        print '\nSAME:'
+                        print new_cc.node, new_cc.edges()
+                        print cc.node, cc.edges()
+                    cc_list[i].occ += 1
+                    found = True
+                    break
+            if not found:
+                new_cc.occ = 1
+                cc_list.append(new_cc)
+            # if cc.number_of_nodes() == 1:
+            #     color = self.coloring[cc.nodes()[0]]
+            #     if color in repeat:
+            #         repeat[color].occ += 1
+            #     else:
+            #         cc.occ = 1
+            #         repeat[color] = cc
+            #         cc_list.append(cc)
 
+            # elif cc.number_of_nodes() == 2:
+            #     colors = frozenset([self.coloring[n] for n in cc.nodes()])
+            #     if colors in repeat:
+            #         repeat[colors].occ += 1
+            #     else:
+            #         cc.occ = 1
+            #         repeat[colors] = cc
+            #         cc_list.append(cc)
+
+            # elif cc.number_of_nodes() == 3:
+            #     colored_edges = []
+            #     for a, b in cc.edges():
+            #         edge = frozenset([self.coloring[a], self.coloring[b]])
+            #         colored_edges.append(edge)
+            #     colored_edges = frozenset(colored_edges)
+            #     if colored_edges in repeat:
+            #         repeat[colored_edges].occ += 1
+            #     else:
+            #         cc.occ = 1
+            #         repeat[colored_edges] = cc
+            #         cc_list.append(cc)
         return cc_list
 
-    def node_match(n1, n2):
-        return self.coloring[n1] == self.coloring[n2]
+    def nm(self, n1, n2):
+        return n1['color'] == n2['color']
+
+    def em(self, e1, e2):
+        c1 = frozenset(self.coloring[e1[0]], self.coloring[e1[1]])
+        c2 = frozenset(self.coloring[e2[0]], self.coloring[e2[1]])
+        return c1 == c2
 
     def get_tree_layouts(self, connected_components, coloring):
         layouts = []
@@ -57,7 +94,7 @@ class DecompositionGenerator(object):
         grid_len = int(math.ceil(math.sqrt(len(layouts))))
         # TODO: Find a good value for this
         for layout in layouts:
-            grid_size = 1
+            grid_size = 1.5
             for index in layout:
                 layout[index] = [layout[index][0] + x_offset, layout[index][1] + y_offset]
             x_offset += grid_size
