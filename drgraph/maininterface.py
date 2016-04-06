@@ -159,11 +159,13 @@ class MainInterface(wx.Frame):
             self.add_tab(decomposeStage)
 
             #TODO: change colorings
-            colorings = [[j+i for j in range(len(dl.pattern.nodes()))]
-                         for i in range(4)]
-            colors = frozenset(dl.colorings[-1])
+            if dl.pattern.number_of_nodes() == 3:
+                colorings = [[0,1,0], [2,3,2],[0,1,2], [3, 4, 5]]
+            elif dl.pattern.number_of_nodes() == 4:
+                colorings = [[0,1,0,1], [0,1,0,2],[3,4,1,3], [0,1,2,3]]
+            colors = set(dl.colorings[-1])
             combineStage = CombineInterface(self.notebook, dl.pattern,
-                                            colorings, colors)
+                                            colorings, colors, 2)
             self.add_tab(combineStage)
 
     def OnQuit(self, e):

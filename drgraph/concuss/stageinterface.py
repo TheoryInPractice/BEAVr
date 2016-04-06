@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
 from drgraph.stageinterface import StageInterface, StageVisualizer, MatplotlibVisualizer
-from drgraph.concuss.visualizerbackend import DecompositionGenerator
+from drgraph.concuss.visualizerbackend import DecompositionGenerator, CombineSetGenerator
 from drgraph.util import load_palette, map_coloring, map_colorings
 
 class ColorInterface(StageInterface):
@@ -143,13 +143,15 @@ class CombineInterface(wx.Panel):
 
     name = "Combine"
 
-    def __init__(self, parent, pattern, colorings, colors):
+    def __init__(self, parent, pattern, colorings, colors, min_size):
         """Fill the empty GUI elements with combination-specific widgets"""
         super(CombineInterface, self).__init__(parent)
 
         self.pattern = pattern
+        self.pattern_size = self.pattern.number_of_nodes()
         self.colorings = colorings
         self.colors = colors
+        self.min_size = min_size
 
         # Make the sizer
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -173,12 +175,15 @@ class CombineInterface(wx.Panel):
         icons.append(self.get_total_icon())
         il = wx.ImageList(self.w, self.h)
         self.add_image_list(icons)
-        for i in range(len(icons)):
-            try:
-                tab = CombinePage(self, -1, self.colorings[i], self.colors)
-            except IndexError:
-                tab = CombinePage(self, -1, None, self.colors)
+        # Add coloring tabs
+        for i in range(len(icons)-1):
+            tab = CombinePage(self, -1, set(self.colorings[i]), self.colors,
+                              self.pattern_size, self.min_size)
             self.listbook.AddPage(tab, '', imageId=i)
+        # Add total tab
+        tab = CombinePage(self, -1, set(), self.colors, self.pattern_size,
+                          self.min_size)
+        self.listbook.AddPage(tab, '', imageId=len(icons)-1)
 
     def add_image_list(self, icons):
         """Take in list of images and assign them to a wx.ImageList"""
@@ -368,7 +373,8 @@ class DecomposeVisualizer(MatplotlibVisualizer):
         """Update the displayed graph"""
         # Compute what we need for the current color set
         cc_list = self.DG.get_connected_components(color_set)
-        layouts = self.DG.get_tree_layouts(cc_list, self.coloring)
+        layouts = self.DG.get_tree_layouts(cc_list
+            , self.coloring)
         # Draw the graph
         self.axes.clear()
         self.axes.set_axis_bgcolor((.8,.8,.8))
@@ -382,6 +388,7 @@ class DecomposeVisualizer(MatplotlibVisualizer):
                                  labels={cc.nodes()[0]:cc.occ})
         self.canvas.Refresh()
 
+
 class CombinePage(wx.Panel):
     """
     A single page of the CombineInterface's Listbook
@@ -391,7 +398,7 @@ class CombinePage(wx.Panel):
     bar, though it is still possible to scroll using the scroll wheel.
     """
 
-    def __init__(self, parent, id, color_set, colors):
+    def __init__(self, parent, id, color_set, colors, pattern_size, min_size):
         super(CombinePage, self).__init__(parent, id)
 
         outersizer = wx.BoxSizer(wx.VERTICAL)
@@ -400,10 +407,12 @@ class CombinePage(wx.Panel):
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
-        inexterm = InExTermWidget(self, None)
-        self.sizer.Add(inexterm, 1, wx.EXPAND)
-        inexterm2 = InExTermWidget(self, None)
-        self.sizer.Add(inexterm2, 1, wx.EXPAND)
+        self.CSG = CombineSetGenerator(color_set, colors, pattern_size, min_size)
+        c_sets_by_size = self.CSG.get_color_sets()
+
+        for c_sets in c_sets_by_size:
+            inexterm = InExTermWidget(self, c_sets)
+            self.sizer.Add(inexterm, 1, wx.EXPAND)
 
         self.scrolledpanel.SetSizer(self.sizer)
         self.scrolledpanel.SetAutoLayout(1)
@@ -411,6 +420,7 @@ class CombinePage(wx.Panel):
 
         outersizer.Add(self.scrolledpanel, 1, wx.EXPAND)
         self.SetSizer(outersizer)
+
 
 class InExTermWidget(wx.Panel):
     """A GUI widget one term of the inclusion-exclusion equation"""
@@ -437,6 +447,7 @@ class InExTermWidget(wx.Panel):
         # Set the sizer
         self.SetSizer(self.sizer)
         self.SetBackgroundColour(wx.Colour(255, 0, 0))
+
 
 class ColorSetWidget(wx.Panel):
     """A GUI widget for one set of colors"""

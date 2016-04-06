@@ -1,4 +1,5 @@
 import math
+from itertools import combinations
 
 from numpy import random
 import networkx as nx
@@ -44,11 +45,6 @@ class DecompositionGenerator(object):
 
     def nm(self, n1, n2):
         return n1['color'] == n2['color']
-
-    def em(self, e1, e2):
-        c1 = frozenset(self.coloring[e1[0]], self.coloring[e1[1]])
-        c2 = frozenset(self.coloring[e2[0]], self.coloring[e2[1]])
-        return c1 == c2
 
     def get_tree_layouts(self, connected_components, coloring):
         layouts = []
@@ -138,3 +134,20 @@ class DecompositionGenerator(object):
         # Root field for use in recursive case to connect tree and subtree
         tree.root = root
         return tree
+
+
+class CombineSetGenerator(object):
+    def __init__(self, color_set, colors, pattern_size, min_size):
+        self.color_set = color_set
+        self.colors = colors
+        self.pattern_size = pattern_size
+        self.min_size = min_size
+
+    def get_color_sets(self):
+        unused = self.colors - self.color_set
+        start = max(self.min_size-len(self.color_set), 0)
+        color_list = sorted(list(self.color_set))
+        sets = []
+        for size in range(start, self.pattern_size+1-len(self.color_set)):
+            sets.append([color_list+list(s) for s in combinations(unused, size)])
+        return sets
