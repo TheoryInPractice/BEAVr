@@ -431,13 +431,14 @@ class InExTermWidget(wx.Panel):
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         # Add the first text
-        text = wx.StaticText(self, -1, "temporary")
+        text = wx.StaticText(self, -1, "modifier")
         self.sizer.Add(text, 0, wx.EXPAND)
 
         # Add the color set widgets
         self.color_set_sizer = wx.WrapSizer(wx.HORIZONTAL)
-        for _ in range(20):
-            self.color_set_sizer.Add(ColorSetWidget(self, None))
+        for i in range(len(color_sets)):
+            self.color_set_sizer.Add(ColorSetWidget(self, color_sets[i]))
+            self.color_set_sizer.AddSpacer(10)
         self.sizer.Add(self.color_set_sizer, 1, wx.EXPAND)
 
         # Add the second text
@@ -446,17 +447,31 @@ class InExTermWidget(wx.Panel):
 
         # Set the sizer
         self.SetSizer(self.sizer)
-        self.SetBackgroundColour(wx.Colour(255, 0, 0))
+        #self.SetBackgroundColour(wx.Colour(255, 0, 0))
 
 
 class ColorSetWidget(wx.Panel):
     """A GUI widget for one set of colors"""
 
     def __init__(self, parent, color_set):
-        super(ColorSetWidget, self).__init__(parent)
+        super(ColorSetWidget, self).__init__(parent, style=wx.SIMPLE_BORDER)
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        text = wx.StaticText(self, -1, "temporary")
-        self.sizer.Add(text)
+        self.color_set = color_set
+
+        self.palette = load_palette("brewer")
+        self.mapped_coloring = map_coloring(self.palette, color_set)
+
+        self.sizer.Add(self.get_color_set_panel())
         self.SetSizer(self.sizer)
-        self.SetBackgroundColour(wx.Colour(0, 255, 0))
+        #self.SetBackgroundColour(wx.Colour(0, 255, 0))
+
+    def get_color_set_panel(self):
+        set_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        for color, bg in zip(self.color_set, self.mapped_coloring):
+            color_panel = wx.Panel(self, -1, size=(50,50))
+            color_panel.SetBackgroundColour([255 * i for i in bg])
+            set_sizer.Add(color_panel)
+
+        return set_sizer
+        
