@@ -173,7 +173,10 @@ class CombineInterface(wx.Panel):
         il = wx.ImageList(self.w, self.h)
         self.add_image_list(icons)
         for i in range(len(icons)):
-            tab = CombinePage(self, -1)
+            try:
+                tab = CombinePage(self, -1, self.colorings[i])
+            except IndexError:
+                tab = CombinePage(self, -1, None)
             self.listbook.AddPage(tab, '', imageId=i)
 
     def add_image_list(self, icons):
@@ -387,7 +390,7 @@ class CombinePage(wx.Panel):
     bar, though it is still possible to scroll using the scroll wheel.
     """
 
-    def __init__(self, parent, id):
+    def __init__(self, parent, id, color_set):
         super(CombinePage, self).__init__(parent, id)
 
         outersizer = wx.BoxSizer(wx.VERTICAL)
@@ -396,8 +399,10 @@ class CombinePage(wx.Panel):
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
-        inexterm = InExTermWidget(self)
+        inexterm = InExTermWidget(self, None)
         self.sizer.Add(inexterm, 1, wx.EXPAND)
+        inexterm2 = InExTermWidget(self, None)
+        self.sizer.Add(inexterm2, 1, wx.EXPAND)
 
         self.scrolledpanel.SetSizer(self.sizer)
         self.scrolledpanel.SetAutoLayout(1)
@@ -409,7 +414,7 @@ class CombinePage(wx.Panel):
 class InExTermWidget(wx.Panel):
     """A GUI widget one term of the inclusion-exclusion equation"""
 
-    def __init__(self, parent):
+    def __init__(self, parent, color_sets):
         super(InExTermWidget, self).__init__(parent, -1)
 
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -420,28 +425,8 @@ class InExTermWidget(wx.Panel):
 
         # Add the color set widgets
         self.color_set_sizer = wx.WrapSizer(wx.HORIZONTAL)
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
-        self.color_set_sizer.Add(ColorSetWidget(self))
+        for _ in range(20):
+            self.color_set_sizer.Add(ColorSetWidget(self, None))
         self.sizer.Add(self.color_set_sizer, 1, wx.EXPAND)
 
         # Add the second text
@@ -455,7 +440,7 @@ class InExTermWidget(wx.Panel):
 class ColorSetWidget(wx.Panel):
     """A GUI widget for one set of colors"""
 
-    def __init__(self, parent):
+    def __init__(self, parent, color_set):
         super(ColorSetWidget, self).__init__(parent)
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
