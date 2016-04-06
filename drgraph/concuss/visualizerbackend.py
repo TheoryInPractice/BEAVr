@@ -34,46 +34,12 @@ class DecompositionGenerator(object):
                 new_cc.node[n]['color'] = self.coloring[n]
             for i, cc in enumerate(cc_list):
                 if nx.is_isomorphic(new_cc, cc, node_match=self.nm):
-                    if new_cc.number_of_nodes() > 1:
-                        print '\nSAME:'
-                        print new_cc.node, new_cc.edges()
-                        print cc.node, cc.edges()
                     cc_list[i].occ += 1
                     found = True
                     break
             if not found:
                 new_cc.occ = 1
                 cc_list.append(new_cc)
-            # if cc.number_of_nodes() == 1:
-            #     color = self.coloring[cc.nodes()[0]]
-            #     if color in repeat:
-            #         repeat[color].occ += 1
-            #     else:
-            #         cc.occ = 1
-            #         repeat[color] = cc
-            #         cc_list.append(cc)
-
-            # elif cc.number_of_nodes() == 2:
-            #     colors = frozenset([self.coloring[n] for n in cc.nodes()])
-            #     if colors in repeat:
-            #         repeat[colors].occ += 1
-            #     else:
-            #         cc.occ = 1
-            #         repeat[colors] = cc
-            #         cc_list.append(cc)
-
-            # elif cc.number_of_nodes() == 3:
-            #     colored_edges = []
-            #     for a, b in cc.edges():
-            #         edge = frozenset([self.coloring[a], self.coloring[b]])
-            #         colored_edges.append(edge)
-            #     colored_edges = frozenset(colored_edges)
-            #     if colored_edges in repeat:
-            #         repeat[colored_edges].occ += 1
-            #     else:
-            #         cc.occ = 1
-            #         repeat[colored_edges] = cc
-            #         cc_list.append(cc)
         return cc_list
 
     def nm(self, n1, n2):

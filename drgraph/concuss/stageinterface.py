@@ -143,12 +143,13 @@ class CombineInterface(wx.Panel):
 
     name = "Combine"
 
-    def __init__(self, parent, pattern, colorings):
+    def __init__(self, parent, pattern, colorings, colors):
         """Fill the empty GUI elements with combination-specific widgets"""
         super(CombineInterface, self).__init__(parent)
 
         self.pattern = pattern
-        self.colorings =  colorings
+        self.colorings = colorings
+        self.colors = colors
 
         # Make the sizer
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -174,9 +175,9 @@ class CombineInterface(wx.Panel):
         self.add_image_list(icons)
         for i in range(len(icons)):
             try:
-                tab = CombinePage(self, -1, self.colorings[i])
+                tab = CombinePage(self, -1, self.colorings[i], self.colors)
             except IndexError:
-                tab = CombinePage(self, -1, None)
+                tab = CombinePage(self, -1, None, self.colors)
             self.listbook.AddPage(tab, '', imageId=i)
 
     def add_image_list(self, icons):
@@ -390,7 +391,7 @@ class CombinePage(wx.Panel):
     bar, though it is still possible to scroll using the scroll wheel.
     """
 
-    def __init__(self, parent, id, color_set):
+    def __init__(self, parent, id, color_set, colors):
         super(CombinePage, self).__init__(parent, id)
 
         outersizer = wx.BoxSizer(wx.VERTICAL)
