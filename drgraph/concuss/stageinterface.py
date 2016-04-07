@@ -496,18 +496,18 @@ class InExTermWidget(wx.Panel):
 
         # Add the first text
         text = wx.StaticText(self, -1, "modifier")
-        self.sizer.Add(text, 0, wx.EXPAND)
+        self.sizer.Add(text, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 12)
 
         # Add the color set widgets
         self.color_set_sizer = wx.WrapSizer(wx.HORIZONTAL)
         for i in range(len(color_sets)):
-            self.color_set_sizer.Add(ColorSetWidget(self, color_sets[i]))
-            self.color_set_sizer.AddSpacer(10)
+            self.color_set_sizer.Add(ColorSetWidget(self, color_sets[i]), 1,
+                    wx.BOTTOM|wx.RIGHT, 10)
         self.sizer.Add(self.color_set_sizer, 1, wx.EXPAND)
 
         # Add the second text
         text2 = wx.StaticText(self, -1, "=temporary")
-        self.sizer.Add(text2, 0, wx.EXPAND)
+        self.sizer.Add(text2, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 12)
 
         # Set the sizer
         self.SetSizer(self.sizer)
@@ -533,7 +533,7 @@ class ColorSetWidget(wx.Panel):
     def get_color_set_panel(self):
         set_sizer = wx.BoxSizer(wx.HORIZONTAL)
         for color, bg in zip(self.color_set, self.mapped_coloring):
-            color_panel = wx.Panel(self, -1, size=(50,50))
+            color_panel = wx.Panel(self, -1, size=(30,30))
             color_panel.SetBackgroundColour([255 * i for i in bg])
             set_sizer.Add(color_panel)
 
