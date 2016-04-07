@@ -150,4 +150,5 @@ class CombineSetGenerator(object):
         sets = []
         for size in range(start, self.pattern_size+1-len(self.color_set)):
             sets.append([color_list+list(s) for s in combinations(unused, size)])
+        sets.reverse()
         return sets

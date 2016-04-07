@@ -476,7 +476,7 @@ class CombinePage(wx.Panel):
 
         for c_sets in c_sets_by_size:
             inexterm = InExTermWidget(self, c_sets)
-            self.sizer.Add(inexterm, 1, wx.EXPAND)
+            self.sizer.Add(inexterm, 0, wx.EXPAND|wx.BOTTOM, 12)
 
         self.scrolledpanel.SetSizer(self.sizer)
         self.scrolledpanel.SetAutoLayout(1)
