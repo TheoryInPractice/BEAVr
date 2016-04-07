@@ -475,7 +475,7 @@ class CombinePage(wx.Panel):
         c_sets_by_size = self.CSG.get_color_sets()
 
         for c_sets in c_sets_by_size:
-            inexterm = InExTermWidget(self, c_sets)
+            inexterm = InExTermWidget(self.scrolledpanel, c_sets)
             self.sizer.Add(inexterm, 0, wx.EXPAND|wx.BOTTOM, 12)
 
         self.scrolledpanel.SetSizer(self.sizer)
