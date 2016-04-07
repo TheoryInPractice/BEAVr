@@ -155,7 +155,7 @@ class MainInterface(wx.Frame):
             self.add_tab(colorStage)
             colorStage.vis.set_graph(dl.graph, dl.colorings)
             decomposeStage = DecomposeInterface(self.notebook, dl.graph,
-                    dl.colorings[-1])
+                    dl.pattern, dl.colorings[-1])
             self.add_tab(decomposeStage)
 
             #TODO: change colorings

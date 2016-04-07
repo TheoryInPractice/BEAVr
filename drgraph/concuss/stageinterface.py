@@ -72,11 +72,13 @@ class DecomposeInterface(StageInterface):
 
     name = "Decompose"
 
-    def __init__(self, parent, graph, coloring):
+    def __init__(self, parent, graph, pattern, coloring):
         """Fill the empty GUI elements with decomposition-specific widgets"""
         super(DecomposeInterface, self).__init__(parent)
 
-        vis = DecomposeVisualizer(self)
+        self.pattern = pattern
+
+        vis = DecomposeVisualizer(self, len(pattern.nodes()))
         self.set_visualization(vis)
         self.vis.set_graph(graph, coloring)
 
@@ -351,11 +353,73 @@ class ColorVisualizer(MatplotlibVisualizer):
 class DecomposeVisualizer(MatplotlibVisualizer):
     """The visualization for the CONCUSS decompose stage"""
 
-    def __init__(self, parent):
+    def __init__(self, parent, p):
         """Create the CONCUSS decompose visualization"""
         super(DecomposeVisualizer, self).__init__(parent)
 
+        self.parent = parent
         self.graph = nx.Graph()
+        self.p = p
+
+        self.canvas.Bind(wx.EVT_PAINT, self.on_paint)
+
+    def on_paint(self, evt):
+        """Draw a legend in the top-left corner of the graph display"""
+        dc = super(DecomposeVisualizer, self).on_paint(evt)
+
+        # Calculate the size of the legend
+        legend_height = 40  # Should be big enough
+        legend_width = 0
+        # Text size
+        cs_label = 'Color set:'
+        cs_extents = self.GetFullTextExtent(cs_label)
+        margin = (legend_height - cs_extents[1]) / 2
+        # Add enough width for the text
+        legend_width += 2 * margin + cs_extents[0]
+        # Add enough width for the colors
+        color_set = set(self.parent.color_set)
+        # Add enough room for the color boxes
+        color_box_size = legend_height - 2 * margin
+        color_box_x = legend_width
+        color_box_y = margin
+        safe_legend_width = legend_width
+        legend_width += (color_box_size + margin) * len(color_set)
+        # The color boxes can be very numerous; wrap if necessary
+        try:
+            size = dc.GetSize()
+        except wx._core.PyAssertionError:
+            # This happens on startup before the window is drawn, because it
+            # has no size yet.  Set a fake size to make the rest of the code
+            # here happy
+            size = (1, 1)
+        legend_height += (color_box_size + margin) * (legend_width // size[0])
+        legend_width = min(legend_width, size[0] - 1)
+
+        # Draw a background for the legend
+        dc.SetPen(wx.Pen(wx.BLACK, 2))
+        # Pink if we have too many colors
+        if len(self.parent.color_set) > self.p:
+            bgcolor = '#ffcccc'
+        # White if we don't have too many
+        else:
+            bgcolor = '#ffffff'
+        dc.SetBrush(wx.Brush(bgcolor, wx.SOLID))
+        # Now that we're done setting things up, draw it
+        dc.DrawRectangle(1, 1, legend_width, legend_height)
+
+        # Draw contents of the legend
+        dc.DrawText(cs_label, margin, margin)
+        for color in color_set:
+            rgb = [int(channel * 255) for channel in
+                    self.palette[color%len(self.palette)]]
+            dc.SetBrush(wx.Brush(wx.Colour(rgb[0], rgb[1], rgb[2])))
+            dc.DrawRectangle(color_box_x, color_box_y, color_box_size,
+                    color_box_size)
+            color_box_x += color_box_size + margin
+            # If we've gone too wide, wrap
+            if color_box_x + color_box_size > size[0]:
+                color_box_x = margin
+                color_box_y += color_box_size + margin
 
     def set_graph(self, graph, coloring, palette_name='brewer'):
         """Set the graph to display"""
