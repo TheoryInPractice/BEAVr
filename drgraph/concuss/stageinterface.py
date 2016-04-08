@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
 from drgraph.stageinterface import StageInterface, StageVisualizer, MatplotlibVisualizer
-from drgraph.concuss.visualizerbackend import DecompositionGenerator, CombineSetGenerator
+from drgraph.concuss.visualizerbackend import DecompositionGenerator, CombineSetGenerator, CountGenerator
 from drgraph.util import load_palette, map_coloring, map_colorings
 
 class ColorInterface(StageInterface):
@@ -135,9 +135,12 @@ class CountInterface(StageInterface):
 
     name = "Count"
 
-    def __init__(self, parent):
+    def __init__(self, parent, graph, k_patterns, motifs, coloring):
         """Fill the empty GUI elements with counting-specific widgets"""
         super(CountInterface, self).__init__(parent)
+
+        vis = CountVisualizer(self, graph, k_patterns, motifs, coloring)
+        self.set_visualization(vis)
 
 
 class CombineInterface(wx.Panel):
@@ -453,6 +456,35 @@ class DecomposeVisualizer(MatplotlibVisualizer):
         self.canvas.Refresh()
 
 
+class CountVisualizer(MatplotlibVisualizer):
+    """The visualization for the CONCUSS count stage"""
+
+    def __init__(self, parent, graph, k_patterns, motifs, coloring):
+        """Create the CONCUSS count visualization"""
+        super(CountVisualizer, self).__init__(parent)
+
+        self.parent = parent
+        self.coloring = coloring
+        self.graph = graph
+        self.k_patterns = k_patterns
+        self.motifs = motifs
+
+        self.CG = CountGenerator(self.graph, self.k_patterns, self.motifs)
+        self.update_graph_display()
+
+    def update_graph_display(self):
+        self.axes.clear()
+        self.axes.set_axis_bgcolor((.8,.8,.8))
+
+        k_layouts = self.CG.get_layouts()
+        graph_attributes = self.CG.get_attributes()
+        for layouts, attributes in zip(k_layouts, graph_attributes):
+            for layout, attribute in zip(layouts, attributes):
+                nx.draw_networkx(self.graph, layout, ax=self.axes, **attribute)
+
+        self.canvas.Refresh()
+
+
 class CombinePage(wx.Panel):
     """
     A single page of the CombineInterface's Listbook
@@ -528,7 +560,6 @@ class InExTermWidget(wx.Panel):
 
         # Set the sizer
         self.SetSizer(self.sizer)
-        #self.SetBackgroundColour(wx.Colour(255, 0, 0))
 
 
 class ColorSetWidget(wx.Panel):

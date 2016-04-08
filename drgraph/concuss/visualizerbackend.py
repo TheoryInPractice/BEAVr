@@ -62,7 +62,7 @@ class DecompositionGenerator(object):
             x_offset += grid_size
             if x_offset >= grid_len*grid_size:
                 x_offset = 0
-                y_offset += grid_size
+                y_offset -= grid_size
 
         return layouts
 
@@ -134,6 +134,84 @@ class DecompositionGenerator(object):
         # Root field for use in recursive case to connect tree and subtree
         tree.root = root
         return tree
+
+
+class CountGenerator(object):
+    layout_margin = 0.05
+
+    def __init__(self, graph, k_patterns, motifs):
+        self.graph = graph
+        self.k_patterns = k_patterns
+        self.motifs = motifs
+
+    def get_layouts(self):
+        k_pattern_layouts = []
+        for k_pattern, motifs in zip(self.k_patterns, self.motifs):
+            motif_layouts = []
+            random.seed(3)
+            l = nx.spring_layout(self.graph)
+            motif_layouts.append(l)
+            for motif in motifs:
+                random.seed(3)
+                l = nx.spring_layout(self.graph)
+                motif_layouts.append(l)
+            k_pattern_layouts.append(motif_layouts)
+                
+        # Calculate offset
+        y_offset = 0
+        x_offset = 0
+        for layouts in k_pattern_layouts:
+            for layout in layouts:
+                grid_size = 3.5
+                for index in layout:
+                    layout[index] = [layout[index][0] + x_offset, layout[index][1] + y_offset]
+                y_offset -= grid_size
+            x_offset += grid_size
+            y_offset = 0
+
+        return k_pattern_layouts 
+
+    def get_attributes(self):
+        """
+        Gets the graph attributes to use for display
+        Each column gets an associated list of graph attributes in the
+            following form: [ {attributes for the k-pattern graph}, 
+                                attribute dictionaries for the motifs instances]
+        The returned attributes variable is a list containing the column lists
+        """
+
+        attributes = []
+
+        # Default attribute values
+        default_size = 300
+        edge_width = 1.0
+        line_width = 1.0
+
+        for k_pattern, motifs in zip(self.k_patterns, self.motifs):
+            attribute_list = [] # List of attribute dictionaries for a k-pattern column
+
+            # Attributes to highlight k-pattern
+            sizes = [default_size * 2 if n in k_pattern else default_size for n in self.graph.nodes()]
+
+            k_pattern_attributes = {"node_size" : sizes,
+                                    "width" : edge_width,
+                                    "linewidths" : line_width}
+            attribute_list.append(k_pattern_attributes)
+
+            for motif in motifs:
+                # Attributes to highlight instances of motif
+                edge_widths = [edge_width * 4.0 if edge in motif.edges() else edge_width for edge in self.graph.edges()]  
+                line_widths = [line_width * 2 if n in motif.nodes() else line_width for n in self.graph.nodes()]
+                
+                motif_attributes = {"node_size" : sizes,
+                                    "width" : edge_widths,
+                                    "linewidths" : line_widths}
+
+                attribute_list.append(motif_attributes)
+
+            attributes.append(attribute_list)
+
+        return attributes 
 
 
 class CombineSetGenerator(object):

@@ -9,6 +9,7 @@ import networkx as nx
 from drgraph.concuss.stageinterface import (
     ColorInterface,
     DecomposeInterface,
+    CountInterface,
     CombineInterface
 )
 from drgraph.stageinterface import DummyStageInterface
@@ -157,6 +158,27 @@ class MainInterface(wx.Frame):
             decomposeStage = DecomposeInterface(self.notebook, dl.graph,
                     dl.pattern, dl.colorings[-1])
             self.add_tab(decomposeStage)
+
+            #Temporary
+            graph = nx.complete_graph(6)
+           
+            k_patterns = [(1,2,3,4,5), (2,3,4,5,0), (1,3,4,5,0)]
+            motifs = [[(1,2,3,4),(1,2,3,5),(1,2,3,0)],
+                    [(2,3,4,5),(2,3,5,0)],
+                    [(1,3,4,5),(1,3,4,0),(1,4,5,0),(3,4,5,0)]]
+            motif_graphs = []
+            for motif_list in motifs:
+                graphs = []
+                for motif in motif_list:
+                    m = nx.Graph()
+                    m.add_nodes_from(motif)
+                    m.add_edges_from([(motif[i], motif[i+1]) for i in range(len(motif)-1)])
+                    graphs.append(m)
+                motif_graphs.append(graphs)
+            coloring = range(6)
+
+            countStage = CountInterface(self.notebook, graph, k_patterns, motif_graphs, coloring)
+            self.add_tab(countStage)
 
             #TODO: change colorings
             if dl.pattern.number_of_nodes() == 3:
