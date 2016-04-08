@@ -474,9 +474,15 @@ class CombinePage(wx.Panel):
         self.CSG = CombineSetGenerator(color_set, colors, pattern_size, min_size)
         c_sets_by_size = self.CSG.get_color_sets()
 
+        total = 0
+        add = len(c_sets_by_size) % 2 == 1
         for c_sets in c_sets_by_size:
-            inexterm = InExTermWidget(self.scrolledpanel, c_sets)
+            inexterm = InExTermWidget(self.scrolledpanel, c_sets, color_set, colors, pattern_size, add)
             self.sizer.Add(inexterm, 0, wx.EXPAND|wx.BOTTOM, 12)
+            total += inexterm.total
+            add = not add
+        text = wx.StaticText(self, -1, 'Final total: ' + str(total))
+        self.sizer.Add(text, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 12)
 
         self.scrolledpanel.SetSizer(self.sizer)
         self.scrolledpanel.SetAutoLayout(1)
@@ -489,13 +495,22 @@ class CombinePage(wx.Panel):
 class InExTermWidget(wx.Panel):
     """A GUI widget one term of the inclusion-exclusion equation"""
 
-    def __init__(self, parent, color_sets):
+    def __init__(self, parent, color_sets, color_set, colors, pattern_size, add):
         super(InExTermWidget, self).__init__(parent, -1)
 
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
+        # Calculate inclusion/exclusion coefficient
+        coef = 1
+        remaining_colors = len(colors) - len(color_sets[0])
+        for i in range(pattern_size-len(color_sets[0]), 0, -1):
+            coef += math.factorial(remaining_colors)/ \
+                    (math.factorial(i)*math.factorial(remaining_colors-i))
+        if not add:
+            coef *= -1
+
         # Add the first text
-        text = wx.StaticText(self, -1, "modifier")
+        text = wx.StaticText(self, -1, '{0:>5}*{1:<5}'.format(coef,len(color_sets)))
         self.sizer.Add(text, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 12)
 
         # Add the color set widgets
@@ -506,7 +521,9 @@ class InExTermWidget(wx.Panel):
         self.sizer.Add(self.color_set_sizer, 1, wx.EXPAND)
 
         # Add the second text
-        text2 = wx.StaticText(self, -1, "=temporary")
+        self.coef = coef
+        self.total = len(color_sets)*coef
+        text2 = wx.StaticText(self, -1, "="+str(self.total))
         self.sizer.Add(text2, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 12)
 
         # Set the sizer
