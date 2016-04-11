@@ -148,13 +148,9 @@ class CountGenerator(object):
         k_pattern_layouts = []
         for k_pattern, motifs in zip(self.k_patterns, self.motifs):
             motif_layouts = []
-            random.seed(3)
-            l = nx.spring_layout(self.graph)
-            motif_layouts.append(l)
+            motif_layouts.append(self.get_layout(self.graph))
             for motif in motifs:
-                random.seed(3)
-                l = nx.spring_layout(self.graph)
-                motif_layouts.append(l)
+                motif_layouts.append(self.get_layout(self.graph))
             k_pattern_layouts.append(motif_layouts)
                 
         # Calculate offset
@@ -162,7 +158,7 @@ class CountGenerator(object):
         x_offset = 0
         for layouts in k_pattern_layouts:
             for layout in layouts:
-                grid_size = 3.5
+                grid_size = 1.5
                 for index in layout:
                     layout[index] = [layout[index][0] + x_offset, layout[index][1] + y_offset]
                 y_offset -= grid_size
@@ -170,6 +166,40 @@ class CountGenerator(object):
             y_offset = 0
 
         return k_pattern_layouts 
+
+    def get_layout(self, graph):
+        layout = None
+        try:
+            # Nice circular layout if you have graphviz
+            from networkx.drawing.nx_agraph import graphviz_layout
+            layout = graphviz_layout(graph, prog='twopi')
+
+            # Scale to fit grid, since twopi seems to ignore the size option
+            min_x = min(pos[0] for pos in layout.values())
+            max_x = max(pos[0] for pos in layout.values())
+            min_y = min(pos[1] for pos in layout.values())
+            max_y = max(pos[1] for pos in layout.values())
+
+            center_x = min_x + (max_x - min_x) / 2
+            center_y = min_y + (max_y - min_y) / 2
+            # Re-center, scale and shift to fit the desired bounding box
+            try:
+                x_scale = (0.5 - self.layout_margin - 0.005) / (center_x - min_x)
+            except ZeroDivisionError:
+                x_scale = 1
+            try:
+                y_scale = (0.5 - self.layout_margin - 0.005) / (center_y - min_y)
+            except ZeroDivisionError:
+                y_scale = 1
+            for vert, pos in layout.iteritems():
+                layout[vert] = ((pos[0] - center_x) * x_scale + 0.5,
+                        (pos[1] - center_y) * y_scale + 0.5)
+
+        except ImportError:
+            # Spring layout if you do not have grahpviz
+            layout = nx.spring_layout(graph, scale=1-2*self.layout_margin-0.01,
+                    center=(0.5, 0.5))
+        return layout
 
     def get_attributes(self):
         """
