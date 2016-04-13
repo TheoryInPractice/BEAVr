@@ -5,7 +5,7 @@ from networkx import Graph
 
 from drgraph.dataloader import DataLoader
 
-class Factory:
+class Factory(object):
     """ Wrapper allowing DataLoaderFactory to create a ConcussDataLoader """
 
     def create(self, archive, parser):
