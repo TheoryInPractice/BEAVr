@@ -143,6 +143,7 @@ class MainInterface(wx.Frame):
         try:
             dl = dlf.load_data(filename)
         except (KeyError, BadZipfile) as e:
+            print e
             e_dlg = wx.MessageDialog(None, 'File does not contain valid ' +
                                      'visualization data', 'Error',
                                      wx.ICON_ERROR)
@@ -160,10 +161,7 @@ class MainInterface(wx.Frame):
             self.add_tab(decomposeStage)
 
             #Temporary
-            graph = nx.Graph()
-            graph.add_nodes_from([1,2,3,4,5])
-            graph.add_edges_from([(1,2),(1,3),(1,4), (2,3), (2,4), (2,5),
-                (3,4),(3,5),(3,0),(4,5),(4,0),(5,0)])
+            graph = dl.big_component
            
             k_patterns = [(1,2,3,4,5), (2,3,4,5,0), (1,3,4,5,0)]
             motifs = [[(1,2,3,4),(1,2,3,5),(1,2,4,5)],

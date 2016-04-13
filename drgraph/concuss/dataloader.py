@@ -27,6 +27,7 @@ class ConcussDataLoader(DataLoader):
         self.graph = self.load_graph()
         self.pattern = self.load_pattern()
         self.colorings = self.load_colorings()
+        self.big_component = self.load_big_component()
 
     def load_graph(self):
         """
@@ -63,6 +64,26 @@ class ConcussDataLoader(DataLoader):
         with self.archive.open(pattern_name, 'r') as pattern_file:
             # Use correct reader to get and return NetworkX graph from graph file
             return graph_reader(pattern_file)
+
+    def load_big_component(self):
+        """
+        Loads the largest component found by CONCUSS.
+
+        This component is always in the file count/big_component.txt in
+        edgelist format.
+        :returns: graph
+        """
+        comp_name = 'count/big_component.txt'
+
+        # Get extension of graph file, which indicates storage format
+        comp_ext = splitext(comp_name)[1]
+        # Get correct reader for graph's format, based on file extension
+        graph_reader = self.get_graph_reader(comp_ext)
+
+        # Open graph as file object
+        with self.archive.open(comp_name, 'r') as comp_file:
+            # Use correct reader to get and return NetworkX graph from graph file
+            return graph_reader(comp_file)
 
     def load_colorings(self):
         """
