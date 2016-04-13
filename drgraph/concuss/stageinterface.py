@@ -469,7 +469,7 @@ class CountVisualizer(MatplotlibVisualizer):
         self.k_patterns = k_patterns
         self.motifs = motifs
 
-        self.CG = CountGenerator(self.graph, self.k_patterns, self.motifs)
+        self.CG = CountGenerator(self.graph, self.k_patterns, self.motifs, self.coloring)
         self.update_graph_display()
 
     def update_graph_display(self):

@@ -176,9 +176,8 @@ class MainInterface(wx.Frame):
                     m.add_edges_from([(motif[i], motif[i+1]) for i in range(len(motif)-1)])
                     graphs.append(m)
                 motif_graphs.append(graphs)
-            coloring = range(6)
 
-            countStage = CountInterface(self.notebook, graph, k_patterns, motif_graphs, coloring)
+            countStage = CountInterface(self.notebook, graph, k_patterns, motif_graphs, dl.colorings[-1])
             self.add_tab(countStage)
 
             #TODO: change colorings
