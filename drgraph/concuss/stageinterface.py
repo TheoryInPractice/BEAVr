@@ -514,7 +514,10 @@ class CombinePage(wx.Panel):
             total += inexterm.total
             add = not add
         text = wx.StaticText(self, -1, 'Final total: ' + str(total))
-        self.sizer.Add(text, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 12)
+        modified_font=text.GetFont()
+        modified_font.SetPixelSize((20,20))
+        text.SetFont(modified_font)
+        self.sizer.Add(text, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_RIGHT, 12)
 
         self.scrolledpanel.SetSizer(self.sizer)
         self.scrolledpanel.SetAutoLayout(1)
@@ -542,20 +545,24 @@ class InExTermWidget(wx.Panel):
             coef *= -1
 
         # Add the first text
-        text = wx.StaticText(self, -1, '{0:>5}*{1:<5}'.format(coef,len(color_sets)))
+        text = wx.StaticText(self, -1, u'{0:>5}\u00d7{1:<5}'.format(coef,len(color_sets)))
+        modified_font=text.GetFont()
+        modified_font.SetPixelSize((20,20))
+        text.SetFont(modified_font)
         self.sizer.Add(text, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 12)
 
         # Add the color set widgets
         self.color_set_sizer = wx.WrapSizer(wx.HORIZONTAL)
         for i in range(len(color_sets)):
             self.color_set_sizer.Add(ColorSetWidget(self, color_sets[i]), 1,
-                    wx.BOTTOM|wx.RIGHT, 10)
+                    wx.BOTTOM|wx.RIGHT, 12)
         self.sizer.Add(self.color_set_sizer, 1, wx.EXPAND)
 
         # Add the second text
         self.coef = coef
         self.total = len(color_sets)*coef
-        text2 = wx.StaticText(self, -1, "="+str(self.total))
+        text2 = wx.StaticText(self, -1, "= "+str(self.total), size=(70,20))
+        text2.SetFont(modified_font)
         self.sizer.Add(text2, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 12)
 
         # Set the sizer
@@ -581,7 +588,7 @@ class ColorSetWidget(wx.Panel):
     def get_color_set_panel(self):
         set_sizer = wx.BoxSizer(wx.HORIZONTAL)
         for color, bg in zip(self.color_set, self.mapped_coloring):
-            color_panel = wx.Panel(self, -1, size=(30,30))
+            color_panel = wx.Panel(self, -1, size=(20,20))
             color_panel.SetBackgroundColour([255 * i for i in bg])
             set_sizer.Add(color_panel)
 
