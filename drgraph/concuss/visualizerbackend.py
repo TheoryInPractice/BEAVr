@@ -232,12 +232,15 @@ class CountGenerator(object):
 
             for motif in motifs:
                 # Attributes to highlight instances of motif
-                edge_widths = [edge_width * 4.0 if edge in motif.edges() else edge_width for edge in self.graph.edges()]  
-                line_widths = [line_width * 2 if n in motif.nodes() else line_width for n in self.graph.nodes()]
+                edge_widths = [edge_width * 3.0 if edge in motif.edges() else edge_width for edge in self.graph.edges()]
+                line_widths = [line_width * 3 if n in motif.nodes() else line_width for n in self.graph.nodes()]
+                style = ["solid" if edge in motif.edges() else "dashed" for
+                        edge in self.graph.edges()]
                 
                 motif_attributes = {"node_size" : sizes,
                                     "width" : edge_widths,
-                                    "linewidths" : line_widths}
+                                    "linewidths" : line_widths,
+                                    "style" : style}
 
                 attribute_list.append(motif_attributes)
 
