@@ -137,7 +137,7 @@ class ConcussDataLoader(DataLoader):
             # Read until we reach eof
             while line != "":
                 # Check if we have a new block
-                block = True if line[-1] == "{" else False
+                block = line[-1] == "{"
                 # If we have a block
                 if block:
                     # Get the vertices
@@ -169,11 +169,11 @@ class ConcussDataLoader(DataLoader):
                         block_entry.append(pi)
                         # Add entry to values
                         values.append(block_entry)
-                        # Go to the next line
+                        # Go to the next line in the block
                         block_line = dp_table_file.readline().strip()
-                    # Add k_pattern as key and values as value
+                    # Add $vertex_list$ as key and $values$ as value
                     table[tuple(vertex_list)] = values
-                # Get the next line
+                # Get the next line in the file
                 line = dp_table_file.readline().strip()
         # return the DP table
         return table
