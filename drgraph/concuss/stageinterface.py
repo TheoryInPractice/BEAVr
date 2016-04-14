@@ -519,7 +519,7 @@ class CombinePage(wx.Panel):
             self.sizer.Add(inexterm, 0, wx.EXPAND|wx.BOTTOM, 12)
             total += inexterm.total
             add = not add
-        text = wx.StaticText(self, -1, 'Final total: ' + str(total))
+        text = wx.StaticText(self.scrolledpanel, -1, 'Final total: ' + str(total))
         modified_font=text.GetFont()
         modified_font.SetPixelSize((20,20))
         text.SetFont(modified_font)
