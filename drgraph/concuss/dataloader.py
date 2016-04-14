@@ -114,6 +114,44 @@ class ConcussDataLoader(DataLoader):
             colorings = [0]
         return colorings
 
+    def load_dp_table(self):
+        dp_table_filename = "count/dptable.txt"
+        table = {}
+        with self.archive.open(dp_table_filename, 'r') as dp_table_file:
+            line = dp_table_file.readline()
+            # Read until we reach eof
+            while line != "":
+                # Check if we have a new block
+                block = True if line[-1] == "{" else False
+                # If we have a block
+                if block:
+                    # Get the vertices
+                    vertex_list = [int(num) for num in line[1: line.find(']')].split(",")]
+                    # Read the first line in the block
+                    block_line = dp_table_file.readline().strip()
+                    # Make a list to store each entry in the block
+                    values = []
+                    # Loop until we reach end of block
+                    while block_line != "}":
+
+                        entry = []
+                        count, k_pat_vertices, k_pat_boundary = tuple(block_line.split(";"))
+                        terms = [val.strip() for val in k_pat_boundary[1:-1].split(",")]
+                        pi = {}
+                        for term in terms:
+                            key_val = term[1:-1].split(":")
+                            pi[int(key_val[0])] = int(key_val[1])
+                        entry.append(int(count))
+                        entry.append([int(num) for num in k_pat_vertices.strip()[1:-1].split(",")])
+                        entry.append(pi)
+                        values.append(entry)
+                        block_line = dp_table_file.readline().strip()
+                    table[tuple(vertex_list)] = values
+                line = dp_table_file.readline()
+
+        print table
+
+
     def get_graph_reader(self, ext):
         """
         Identifies, imports, and returns NetworkX reader for graph file format
