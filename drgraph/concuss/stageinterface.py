@@ -459,7 +459,8 @@ class DecomposeVisualizer(MatplotlibVisualizer):
 class CountVisualizer(MatplotlibVisualizer):
     """The visualization for the CONCUSS count stage"""
 
-    def __init__(self, parent, graph, k_patterns, motifs, coloring):
+    def __init__(self, parent, graph, k_patterns, motifs, coloring,
+            palette_name='brewer'):
         """Create the CONCUSS count visualization"""
         super(CountVisualizer, self).__init__(parent)
 
@@ -468,6 +469,9 @@ class CountVisualizer(MatplotlibVisualizer):
         self.graph = graph
         self.k_patterns = k_patterns
         self.motifs = motifs
+
+        self.palette = load_palette(palette_name)
+        self.mapped_coloring = map_coloring(self.palette, self.coloring)
 
         self.CG = CountGenerator(self.graph, self.k_patterns, self.motifs, self.coloring)
         self.update_graph_display()
@@ -478,9 +482,11 @@ class CountVisualizer(MatplotlibVisualizer):
 
         k_layouts = self.CG.get_layouts()
         graph_attributes = self.CG.get_attributes()
+        comp_colors = [self.mapped_coloring[node] for node in self.graph.nodes()]
         for layouts, attributes in zip(k_layouts, graph_attributes):
             for layout, attribute in zip(layouts, attributes):
-                nx.draw_networkx(self.graph, layout, ax=self.axes, **attribute)
+                nx.draw_networkx(self.graph, layout, ax=self.axes,
+                        node_color=comp_colors, **attribute)
 
         self.canvas.Refresh()
 
