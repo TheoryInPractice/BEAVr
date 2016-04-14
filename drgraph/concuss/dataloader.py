@@ -28,6 +28,7 @@ class ConcussDataLoader(DataLoader):
         self.pattern = self.load_pattern()
         self.colorings = self.load_colorings()
         self.big_component = self.load_big_component()
+        self.table = self.load_dp_table()
 
     def load_graph(self):
         """
@@ -115,10 +116,24 @@ class ConcussDataLoader(DataLoader):
         return colorings
 
     def load_dp_table(self):
-        dp_table_filename = "count/dptable.txt"
+        """
+        Read the dynamic programming table provided by CONCUSS
+
+        Returns: $table$ - a dictionary which has the following format:
+        key: tuple of vertices
+        value: a list of lists each of which has the format:
+               [count, k_pat_vertices, k_pat_boundary]
+               where $count$ is an integer,
+                     $k_pat_vertices$ is a list of vertices
+                     $k_pat_boundary$ is a dictionary representing pi
+                     where pi maps vertices in $k_pat_vertices$ to labels
+        """
+
+        import ast
+        dp_table_filename = "count/dp_table.txt"
         table = {}
         with self.archive.open(dp_table_filename, 'r') as dp_table_file:
-            line = dp_table_file.readline()
+            line = dp_table_file.readline().strip()
             # Read until we reach eof
             while line != "":
                 # Check if we have a new block
@@ -133,24 +148,35 @@ class ConcussDataLoader(DataLoader):
                     values = []
                     # Loop until we reach end of block
                     while block_line != "}":
-
-                        entry = []
+                        # For each line in the block make a list
+                        block_entry = []
+                        # Get the count, k_pat_vertices and boundary from that line
                         count, k_pat_vertices, k_pat_boundary = tuple(block_line.split(";"))
-                        terms = [val.strip() for val in k_pat_boundary[1:-1].split(",")]
+                        # Get terms in the boundary
+                        terms = []
+                        for term in k_pat_boundary.strip()[1:-1].split(","):
+                            if term != "":
+                                terms.append(term.strip())
+                        # Make a dictionary that represents pi
                         pi = {}
+                        # Populate pi
                         for term in terms:
-                            key_val = term[1:-1].split(":")
+                            key_val = term.split(":")
                             pi[int(key_val[0])] = int(key_val[1])
-                        entry.append(int(count))
-                        entry.append([int(num) for num in k_pat_vertices.strip()[1:-1].split(",")])
-                        entry.append(pi)
-                        values.append(entry)
+                        # Add the count, k_pat_vertices and pi to our list
+                        block_entry.append(int(count))
+                        block_entry.append(ast.literal_eval(k_pat_vertices.strip()))
+                        block_entry.append(pi)
+                        # Add entry to values
+                        values.append(block_entry)
+                        # Go to the next line
                         block_line = dp_table_file.readline().strip()
+                    # Add k_pattern as key and values as value
                     table[tuple(vertex_list)] = values
-                line = dp_table_file.readline()
-
-        print table
-
+                # Get the next line
+                line = dp_table_file.readline().strip()
+        # return the DP table
+        return table
 
     def get_graph_reader(self, ext):
         """
