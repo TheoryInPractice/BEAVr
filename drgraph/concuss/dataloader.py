@@ -101,7 +101,7 @@ class ConcussDataLoader(DataLoader):
         with self.archive.open(filename, 'r') as tdd_file:
             for line in tdd_file:
                 node, parent = tuple(line.strip().split())
-                tdd.add_edge(node, parent)
+                tdd.add_edge(int(node), int(parent))
 
         return tdd
 
