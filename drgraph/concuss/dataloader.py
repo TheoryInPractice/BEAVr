@@ -97,12 +97,11 @@ class ConcussDataLoader(DataLoader):
         """
         import networkx as nx
         filename = 'count/tdd.txt'
-        tdd = nx.Graph()
+        tdd = nx.DiGraph()
         with self.archive.open(filename, 'r') as tdd_file:
             for line in tdd_file:
                 node, parent = tuple(line.strip().split())
-                tdd.add_node(node, parent=parent)
-                tdd.add_node(parent)
+                tdd.add_edge(node, parent)
 
         return tdd
 
