@@ -29,6 +29,7 @@ class ConcussDataLoader(DataLoader):
         self.colorings = self.load_colorings()
         self.big_component = self.load_big_component()
         self.table = self.load_dp_table()
+        self.tdd = self.load_tdd()
 
     def load_graph(self):
         """
@@ -86,7 +87,7 @@ class ConcussDataLoader(DataLoader):
             # Use correct reader to get and return NetworkX graph from graph file
             return graph_reader(comp_file)
 
-    def get_tdd(self):
+    def load_tdd(self):
         """
         Reads the treedepth decompostion from the tdd.txt file
 
@@ -99,7 +100,7 @@ class ConcussDataLoader(DataLoader):
         tdd = nx.Graph()
         with self.archive.open(filename, 'r') as tdd_file:
             for line in tdd_file:
-                node, parent = tuple(line.strip().split(","))
+                node, parent = tuple(line.strip().split())
                 tdd.add_node(node, parent=parent)
                 tdd.add_node(parent)
 
