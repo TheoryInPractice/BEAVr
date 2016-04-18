@@ -150,8 +150,22 @@ class CountGenerator(object):
 
     def get_patterns(self):
         """Get some k-patterns and complete motifs"""
-        self.k_patterns = [nx.Graph(), nx.Graph(), nx.Graph()]
+        self.k_patterns = []
         self.motifs = [[nx.Graph()], [nx.Graph()], [nx.Graph()]]
+
+        vertices = random.choice(self.dptable.keys())
+        root_path = self.get_root_path(vertices[0])
+        print "vertices: " + str(vertices) + "; root path: " + str(root_path)
+
+    def get_root_path(self, vertex, top_level=True):
+        parent = self.tdd.successors(vertex)
+        if len(parent) == 0:
+            return [vertex]
+
+        root_path = self.get_root_path(parent[0], top_level=False)
+        if not top_level:
+            root_path.append(vertex)
+        return root_path
 
     def get_layouts(self):
         k_pattern_layouts = []
