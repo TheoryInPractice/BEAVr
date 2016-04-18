@@ -140,8 +140,9 @@ class DecompositionGenerator(object):
 class CountGenerator(object):
     layout_margin = 0.05
 
-    def __init__(self, graph, tdd, dptable, coloring):
+    def __init__(self, graph, pattern, tdd, dptable, coloring):
         self.graph = graph
+        self.pattern = pattern
         self.tdd = tdd
         self.dptable = dptable
         print dptable
