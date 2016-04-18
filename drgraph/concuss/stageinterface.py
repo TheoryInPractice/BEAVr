@@ -514,10 +514,14 @@ class CombinePage(wx.Panel):
         self.CSG = CombineSetGenerator(color_set, colors, pattern_size, min_size)
         c_sets_by_size = self.CSG.get_color_sets()
 
+        # Display a max of 100 color sets for each set size
+        max_sets_coef = 100/math.log(pattern_size)
         total = 0
         add = len(c_sets_by_size) % 2 == 1
         for c_sets in c_sets_by_size:
-            inexterm = InExTermWidget(self.scrolledpanel, c_sets, color_set, colors, pattern_size, add)
+            max_sets = int(max_sets_coef*math.log(len(c_sets[0])))
+            inexterm = InExTermWidget(self.scrolledpanel, c_sets, color_set,\
+                                      colors, pattern_size, add, max_sets)
             self.sizer.Add(inexterm, 0, wx.EXPAND|wx.BOTTOM, 12)
             total += inexterm.total
             add = not add
@@ -538,7 +542,8 @@ class CombinePage(wx.Panel):
 class InExTermWidget(wx.Panel):
     """A GUI widget one term of the inclusion-exclusion equation"""
 
-    def __init__(self, parent, color_sets, color_set, colors, pattern_size, add):
+    def __init__(self, parent, color_sets, color_set, colors, pattern_size,\
+                 add, max_sets):
         super(InExTermWidget, self).__init__(parent, -1)
 
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -566,9 +571,16 @@ class InExTermWidget(wx.Panel):
 
         # Add the color set widgets
         self.color_set_sizer = wx.WrapSizer(wx.HORIZONTAL)
-        for i in range(len(color_sets)):
+        for i in range(min(len(color_sets),max_sets)):
             self.color_set_sizer.Add(ColorSetWidget(self, color_sets[i]), 1,
                     wx.BOTTOM|wx.RIGHT, 12)
+
+        # Add ellipsis if we aren't displaying all of the color sets
+        if len(color_sets) > max_sets:
+            text = wx.StaticText(self, -1, "...", size=(20,20))
+            text.SetFont(modified_font)
+            self.color_set_sizer.Add(text, 1, wx.BOTTOM|wx.RIGHT, 12)
+
         self.sizer.Add(self.color_set_sizer, 1, wx.EXPAND)
 
         # Add the second text
