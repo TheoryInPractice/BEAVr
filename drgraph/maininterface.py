@@ -163,22 +163,9 @@ class MainInterface(wx.Frame):
             #Temporary
             graph = dl.big_component
             tdd = dl.tdd
+            dptable = dl.table
            
-            k_patterns = [(1,2,3,4,5), (2,3,4,5,0), (1,3,4,5,0)]
-            motifs = [[(1,2,3,4),(1,2,3,5),(1,2,4,5)],
-                    [(2,3,4,5),(2,3,5,0)],
-                    [(1,3,4,5),(1,3,4,0),(1,4,5,0),(3,4,5,0)]]
-            motif_graphs = []
-            for motif_list in motifs:
-                graphs = []
-                for motif in motif_list:
-                    m = nx.Graph()
-                    m.add_nodes_from(motif)
-                    m.add_edges_from([(motif[i], motif[i+1]) for i in range(len(motif)-1)])
-                    graphs.append(m)
-                motif_graphs.append(graphs)
-
-            countStage = CountInterface(self.notebook, graph, tdd, k_patterns, motif_graphs, dl.colorings[-1])
+            countStage = CountInterface(self.notebook, graph, tdd, dptable, dl.colorings[-1])
             self.add_tab(countStage)
 
             #TODO: change colorings

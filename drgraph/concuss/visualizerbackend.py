@@ -1,4 +1,5 @@
 import math
+import random
 from itertools import combinations
 
 from numpy import random
@@ -139,12 +140,18 @@ class DecompositionGenerator(object):
 class CountGenerator(object):
     layout_margin = 0.05
 
-    def __init__(self, graph, tdd, k_patterns, motifs, coloring):
+    def __init__(self, graph, tdd, dptable, coloring):
         self.graph = graph
         self.tdd = tdd
-        self.k_patterns = k_patterns
-        self.motifs = motifs
+        self.dptable = dptable
+        print dptable
         self.coloring = coloring
+        self.get_patterns()
+
+    def get_patterns(self):
+        """Get some k-patterns and complete motifs"""
+        self.k_patterns = [nx.Graph(), nx.Graph(), nx.Graph()]
+        self.motifs = [[nx.Graph()], [nx.Graph()], [nx.Graph()]]
 
     def get_layouts(self):
         k_pattern_layouts = []
