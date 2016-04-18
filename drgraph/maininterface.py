@@ -162,6 +162,7 @@ class MainInterface(wx.Frame):
 
             #Temporary
             graph = dl.big_component
+            tdd = dl.tdd
            
             k_patterns = [(1,2,3,4,5), (2,3,4,5,0), (1,3,4,5,0)]
             motifs = [[(1,2,3,4),(1,2,3,5),(1,2,4,5)],
@@ -177,7 +178,7 @@ class MainInterface(wx.Frame):
                     graphs.append(m)
                 motif_graphs.append(graphs)
 
-            countStage = CountInterface(self.notebook, graph, k_patterns, motif_graphs, dl.colorings[-1])
+            countStage = CountInterface(self.notebook, graph, tdd, k_patterns, motif_graphs, dl.colorings[-1])
             self.add_tab(countStage)
 
             #TODO: change colorings

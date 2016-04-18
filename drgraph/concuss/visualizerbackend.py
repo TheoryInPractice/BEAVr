@@ -139,8 +139,9 @@ class DecompositionGenerator(object):
 class CountGenerator(object):
     layout_margin = 0.05
 
-    def __init__(self, graph, k_patterns, motifs, coloring):
+    def __init__(self, graph, tdd, k_patterns, motifs, coloring):
         self.graph = graph
+        self.tdd = tdd
         self.k_patterns = k_patterns
         self.motifs = motifs
         self.coloring = coloring
@@ -170,11 +171,13 @@ class CountGenerator(object):
 
     def get_layout(self, graph):
         layout = None
-        tree = self.get_underlying_tree(graph)
+        tree = self.tdd
+        root = self.get_tdd_root()
         try:
             # Nice circular layout if you have graphviz
             from networkx.drawing.nx_agraph import graphviz_layout
-            layout = graphviz_layout(tree, prog='twopi')
+            layout = graphviz_layout(tree, prog='twopi',
+                    args='-Groot={0}'.format(root))
 
             # Scale to fit grid, since twopi seems to ignore the size option
             min_x = min(pos[0] for pos in layout.values())
@@ -248,39 +251,11 @@ class CountGenerator(object):
 
         return attributes 
 
-    def get_underlying_tree(self, connected_component):
-        # Find the root (color with only one occurrence)
-        root = None
-        colors = [self.coloring[node] for node in connected_component.nodes()]
-        for index, color in enumerate(colors):
-            colors[index] = 'Not a color'
-            if color not in colors:
-                root = connected_component.nodes()[index]
-                break
-            colors[index] = color
-
-        # If we can't find a root, something's wrong!
-        if root == None:
-            print 'WARNING: Coloring this has no root', colors
-            return connected_component
-
-        # Create a new NetworkX graph to represent the tree
-        tree = nx.Graph()
-        tree.add_node(root)
-
-        # Remove the root from the connected component
-        connected_component = nx.Graph(connected_component)
-        connected_component.remove_node(root)
-
-        # Every new connected component is a subtree
-        for sub_cc in nx.connected_component_subgraphs(connected_component):
-            subtree = self.get_underlying_tree(sub_cc)
-            tree = nx.compose(tree, subtree)
-            tree.add_edge(root, subtree.root)
-
-        # Root field for use in recursive case to connect tree and subtree
-        tree.root = root
-        return tree
+    def get_tdd_root(self):
+        """Find the root of the treedepth decomposition"""
+        for node in self.tdd.nodes():
+            if self.tdd.out_degree(node) == 0:
+                return node
 
 class CombineSetGenerator(object):
     def __init__(self, color_set, colors, pattern_size, min_size):

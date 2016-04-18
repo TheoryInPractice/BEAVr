@@ -135,11 +135,11 @@ class CountInterface(StageInterface):
 
     name = "Count"
 
-    def __init__(self, parent, graph, k_patterns, motifs, coloring):
+    def __init__(self, parent, graph, tdd, k_patterns, motifs, coloring):
         """Fill the empty GUI elements with counting-specific widgets"""
         super(CountInterface, self).__init__(parent)
 
-        vis = CountVisualizer(self, graph, k_patterns, motifs, coloring)
+        vis = CountVisualizer(self, graph, tdd, k_patterns, motifs, coloring)
         self.set_visualization(vis)
 
 
@@ -459,7 +459,7 @@ class DecomposeVisualizer(MatplotlibVisualizer):
 class CountVisualizer(MatplotlibVisualizer):
     """The visualization for the CONCUSS count stage"""
 
-    def __init__(self, parent, graph, k_patterns, motifs, coloring,
+    def __init__(self, parent, graph, tdd, k_patterns, motifs, coloring,
             palette_name='brewer'):
         """Create the CONCUSS count visualization"""
         super(CountVisualizer, self).__init__(parent)
@@ -467,13 +467,14 @@ class CountVisualizer(MatplotlibVisualizer):
         self.parent = parent
         self.coloring = coloring
         self.graph = graph
+        self.tdd = tdd
         self.k_patterns = k_patterns
         self.motifs = motifs
 
         self.palette = load_palette(palette_name)
         self.mapped_coloring = map_coloring(self.palette, self.coloring)
 
-        self.CG = CountGenerator(self.graph, self.k_patterns, self.motifs, self.coloring)
+        self.CG = CountGenerator(self.graph, self.tdd, self.k_patterns, self.motifs, self.coloring)
         self.update_graph_display()
 
     def update_graph_display(self):
