@@ -552,7 +552,12 @@ class InExTermWidget(wx.Panel):
             coef *= -1
 
         # Add the first text
-        text = wx.StaticText(self, -1, u'{0:>5}\u00d7{1:<5}'.format(coef,len(color_sets)))
+        coef_str = str(coef)
+        if coef >= 0:
+            coef_str = '+' + coef_str
+        text_str = coef_str + u' \u00d7 ' + str(len(color_sets))
+        text_str = ' ' * (12-len(text_str)) + text_str
+        text = wx.StaticText(self, -1, text_str, size=(110,20))
         modified_font=text.GetFont()
         modified_font.SetPixelSize((20,20))
         text.SetFont(modified_font)
