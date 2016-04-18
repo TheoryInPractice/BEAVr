@@ -145,7 +145,7 @@ class CountGenerator(object):
         self.pattern = pattern
         self.tdd = tdd
         self.dptable = dptable
-        print dptable
+        #print dptable
         self.coloring = coloring
         self.get_patterns()
 
@@ -156,7 +156,27 @@ class CountGenerator(object):
 
         vertices = random.choice(self.dptable.keys())
         root_path = self.get_root_path(vertices[0])
-        print "vertices: " + str(vertices) + "; root path: " + str(root_path)
+
+        print self.get_pattern(vertices, root_path)
+
+    def get_pattern(self, vertices, root_path):
+        good_pattern = False
+        len_rp = len(root_path)
+
+        while not good_pattern:
+            good_pattern = True
+            k_pat = self.dptable[vertices][random.randint(len(self.dptable[vertices]))]
+            pi = k_pat[2]
+
+            if len(pi) == 0:
+                good_pattern = False
+
+            for mapping in pi.itervalues():
+                if mapping >= len_rp:
+                    good_pattern = False
+                    break
+
+        return k_pat
 
     def get_root_path(self, vertex, top_level=True):
         parent = self.tdd.successors(vertex)
