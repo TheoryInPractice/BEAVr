@@ -156,16 +156,13 @@ class MainInterface(wx.Frame):
             self.remove_all_tabs()
             self.add_tab(colorStage)
             colorStage.vis.set_graph(dl.graph, dl.colorings)
+
             decomposeStage = DecomposeInterface(self.notebook, dl.graph,
                     dl.pattern, dl.colorings[-1])
             self.add_tab(decomposeStage)
 
-            #Temporary
-            graph = dl.big_component
-            tdd = dl.tdd
-            dptable = dl.table
-           
-            countStage = CountInterface(self.notebook, graph, tdd, dptable, dl.colorings[-1])
+            countStage = CountInterface(self.notebook, dl.big_component,
+                    dl.pattern, dl.tdd, dl.table, dl.colorings[-1])
             self.add_tab(countStage)
 
             #TODO: change colorings
