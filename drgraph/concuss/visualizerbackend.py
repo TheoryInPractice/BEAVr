@@ -308,10 +308,10 @@ class CombineSetGenerator(object):
 
     def get_color_sets(self):
         unused = self.colors - self.color_set
-        start = max(self.min_size-len(self.color_set), 0)
+        low = max(self.min_size-len(self.color_set), 0) - 1
+        high = self.pattern_size-len(self.color_set)
         color_list = sorted(list(self.color_set))
         sets = []
-        for size in range(start, self.pattern_size+1-len(self.color_set)):
+        for size in range(high, low, -1):
             sets.append([color_list+list(s) for s in combinations(unused, size)])
-        sets.reverse()
         return sets
