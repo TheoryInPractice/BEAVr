@@ -489,7 +489,7 @@ class CountVisualizer(MatplotlibVisualizer):
         for layouts, attributes in zip(k_layouts, graph_attributes):
             for layout, attribute in zip(layouts, attributes):
                 nx.draw_networkx(self.graph, layout, ax=self.axes,
-                        node_color=comp_colors, **attribute)
+                        node_color=comp_colors, with_labels=False, **attribute)
 
         self.canvas.Refresh()
 
