@@ -178,21 +178,24 @@ class CountGenerator(object):
     def get_pattern(self, vertices, root_path):
         """Return an interesting k-pattern from the given part of the table"""
         good_pattern = False
-        len_rp = len(root_path)
 
+        # Localize variable for reuse
+        len_rp = len(root_path)
+        # While we don't have a good pattern
         while not good_pattern:
             good_pattern = True
+            # Get a new random pattern
             k_pat = self.dptable[vertices][random.randint(len(self.dptable[vertices]))]
             pi = k_pat[2]
-
+            # If pi is empty
             if len(pi) == 0:
                 good_pattern = False
-
+            # Check if we don't have something
             for mapping in pi.itervalues():
                 if mapping >= len_rp:
                     good_pattern = False
                     break
-
+        # Return the good k-pattern
         return k_pat
 
     def get_motifs_for_k_pattern(self, k_pat, vertices, root_path):
