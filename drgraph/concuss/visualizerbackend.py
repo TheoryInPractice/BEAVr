@@ -170,9 +170,11 @@ class CountGenerator(object):
 
             # TODO: Highlight complete motifs the selected k-pattern
             # participates in
-            self.motifs.append([nx.Graph()])
+            motifs = self.get_motifs_for_k_pattern(k_pat, vertices, root_path)
+            self.motifs.append(motifs)
 
     def get_pattern(self, vertices, root_path):
+        """Return an interesting k-pattern from the given part of the table"""
         good_pattern = False
         len_rp = len(root_path)
 
@@ -191,7 +193,13 @@ class CountGenerator(object):
 
         return k_pat
 
+    def get_motifs_for_k_pattern(self, k_pat, vertices, root_path):
+        """Return a list of subgraphs isomorphic to the motif"""
+        # TODO: Implement what the docstring claims we do
+        return [nx.Graph()]
+
     def get_root_path(self, vertex, top_level=True):
+        """Return the root path for the given vertex"""
         parent = self.tdd.successors(vertex)
         if len(parent) == 0:
             return [vertex]
