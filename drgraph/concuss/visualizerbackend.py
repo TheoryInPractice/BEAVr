@@ -139,25 +139,38 @@ class DecompositionGenerator(object):
 
 class CountGenerator(object):
     layout_margin = 0.05
+    k_pat_count = 3
 
     def __init__(self, graph, pattern, tdd, dptable, coloring):
         self.graph = graph
         self.pattern = pattern
         self.tdd = tdd
         self.dptable = dptable
-        #print dptable
         self.coloring = coloring
+
         self.get_patterns()
 
     def get_patterns(self):
         """Get some k-patterns and complete motifs"""
-        self.k_patterns = [nx.Graph(), nx.Graph(), nx.Graph()]
-        self.motifs = [[nx.Graph()], [nx.Graph()], [nx.Graph()]]
+        self.k_patterns = []
+        self.motifs = []
 
-        vertices = random.choice(self.dptable.keys())
-        root_path = self.get_root_path(vertices[0])
+        for _ in range(self.k_pat_count):
+            # Get a random set of vertices from the DP table
+            vertices = random.choice(self.dptable.keys())
+            # Get the root path
+            root_path = self.get_root_path(vertices[0])
 
-        print self.get_pattern(vertices, root_path)
+            # Get a k-pattern from that part of the DP table
+            k_pat = self.get_pattern(vertices, root_path)
+            # Get the vertices on its boundary
+            k_pat_boundary_vertices = [root_path[v] for v in k_pat[2].itervalues()]
+            # Select those for display
+            self.k_patterns.append(k_pat_boundary_vertices)
+
+            # TODO: Highlight complete motifs the selected k-pattern
+            # participates in
+            self.motifs.append([nx.Graph()])
 
     def get_pattern(self, vertices, root_path):
 
