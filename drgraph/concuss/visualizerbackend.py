@@ -2,8 +2,9 @@ import math
 import random
 from itertools import combinations
 
-from numpy import random
 import networkx as nx
+from networkx.algorithms import isomorphism
+from numpy import random
 
 class DecompositionGenerator(object):
     layout_margin = 0.05
@@ -140,6 +141,7 @@ class DecompositionGenerator(object):
 class CountGenerator(object):
     layout_margin = 0.05
     k_pat_count = 3
+    subgraph_count = 5
 
     def __init__(self, graph, pattern, tdd, dptable, coloring):
         self.graph = graph
@@ -195,8 +197,33 @@ class CountGenerator(object):
 
     def get_motifs_for_k_pattern(self, k_pat, vertices, root_path):
         """Return a list of subgraphs isomorphic to the motif"""
-        # TODO: Implement what the docstring claims we do
-        return [nx.Graph()]
+        motifs = []
+        sv = self.get_subforest_vertices(vertices)
+        gm = isomorphism.GraphMatcher(self.graph, self.pattern)
+        for im in gm.subgraph_isomorphisms_iter():
+            matches_k_pat = True
+            # Reverse the mapping
+            imr = {v: k for k, v in im.iteritems()}
+            for v in k_pat[1]:
+                # Check that boundary vertices are mapped right
+                if v in k_pat[2]:
+                    if imr[v] != root_path[k_pat[2][v]]:
+                        matches_k_pat = False
+                        break
+                # Check that non-boundary vertices in the k-pattern are in the
+                # right part of the graph
+                elif imr[v] not in sv:
+                    matches_k_pat = False
+                    break
+            # Check that im matches the k-pattern
+            if matches_k_pat:
+                # Append a subgraph
+                motifs.append(nx.relabel_nodes(self.pattern, imr))
+            # Don't add too many
+            if len(motifs) >= self.subgraph_count:
+                break
+
+        return motifs
 
     def get_root_path(self, vertex, top_level=True):
         """Return the root path for the given vertex"""
@@ -208,6 +235,18 @@ class CountGenerator(object):
         if not top_level:
             root_path.append(vertex)
         return root_path
+
+    def get_subforest_vertices(self, vertices):
+        """Get the vertices from the union of subtrees rooted at vertices"""
+        # Copy the given vertices
+        subforest = list(vertices)
+
+        for v in vertices:
+            pred = self.tdd.predecessors(v)
+            if pred:
+                subforest.extend(self.get_subforest_vertices(pred))
+
+        return subforest
 
     def get_layouts(self):
         k_pattern_layouts = []
@@ -298,10 +337,22 @@ class CountGenerator(object):
 
             for motif in motifs:
                 # Attributes to highlight instances of motif
-                edge_widths = [edge_width * 3.0 if edge in motif.edges() else edge_width for edge in self.graph.edges()]
+                edge_widths = []
+                motif_edges = motif.edges()
+                for edge in self.graph.edges():
+                    if edge in motif_edges or tuple(reversed(edge)) in motif_edges:
+                        edge_widths.append(edge_width * 3)
+                    else:
+                        edge_widths.append(edge_width)
+
                 line_widths = [line_width * 3 if n in motif.nodes() else line_width for n in self.graph.nodes()]
-                style = ["solid" if edge in motif.edges() else "dashed" for
-                        edge in self.graph.edges()]
+
+                style = []
+                for edge in self.graph.edges():
+                    if edge in motif_edges or tuple(reversed(edge)) in motif_edges:
+                        style.append("solid")
+                    else:
+                        style.append("dashed")
                 
                 motif_attributes = {"node_size" : sizes,
                                     "width" : edge_widths,
