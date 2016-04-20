@@ -473,9 +473,10 @@ class CountVisualizer(MatplotlibVisualizer):
 
         self.palette = load_palette(palette_name)
         self.mapped_coloring = map_coloring(self.palette, self.coloring)
-
+        self.colorset = [self.coloring[node] for node in self.tdd.nodes()]
         self.CG = CountGenerator(self.graph, self.pattern, self.tdd,
                 self.dptable, self.coloring)
+        self.canvas.Bind(wx.EVT_PAINT, self.on_paint)
         self.update_graph_display()
 
     def update_graph_display(self):
@@ -491,6 +492,58 @@ class CountVisualizer(MatplotlibVisualizer):
                         node_color=comp_colors, **attribute)
 
         self.canvas.Refresh()
+
+    def on_paint(self, evt):
+        """Draw a legend in the top-left corner of the graph display"""
+        dc = super(CountVisualizer, self).on_paint(evt)
+
+        # Calculate the size of the legend
+        legend_height = 40  # Should be big enough
+        legend_width = 0
+        # Text size
+        cs_label = 'Color set:'
+        cs_extents = self.GetFullTextExtent(cs_label)
+        margin = (legend_height - cs_extents[1]) / 2
+        # Add enough width for the text
+        legend_width += 2 * margin + cs_extents[0]
+        # Add enough width for the colors
+        color_set = set(self.colorset)
+        # Add enough room for the color boxes
+        color_box_size = legend_height - 2 * margin
+        color_box_x = legend_width
+        color_box_y = margin
+        safe_legend_width = legend_width
+        legend_width += (color_box_size + margin) * len(color_set)
+        # The color boxes can be very numerous; wrap if necessary
+        try:
+            size = dc.GetSize()
+        except wx._core.PyAssertionError:
+            # This happens on startup before the window is drawn, because it
+            # has no size yet.  Set a fake size to make the rest of the code
+            # here happy
+            size = (1, 1)
+        legend_height += (color_box_size + margin) * (legend_width // size[0])
+        legend_width = min(legend_width, size[0] - 1)
+
+        # Draw a background for the legend
+        dc.SetPen(wx.Pen(wx.BLACK, 2))
+        dc.SetBrush(wx.Brush('#ffffff', wx.SOLID))
+        # Now that we're done setting things up, draw it
+        dc.DrawRectangle(1, 1, legend_width, legend_height)
+
+        # Draw contents of the legend
+        dc.DrawText(cs_label, margin, margin)
+        for color in color_set:
+            rgb = [int(channel * 255) for channel in
+                    self.palette[color%len(self.palette)]]
+            dc.SetBrush(wx.Brush(wx.Colour(rgb[0], rgb[1], rgb[2])))
+            dc.DrawRectangle(color_box_x, color_box_y, color_box_size,
+                    color_box_size)
+            color_box_x += color_box_size + margin
+            # If we've gone too wide, wrap
+            if color_box_x + color_box_size > size[0]:
+                color_box_x = margin
+                color_box_y += color_box_size + margin
 
 
 class CombinePage(wx.Panel):
@@ -618,4 +671,3 @@ class ColorSetWidget(wx.Panel):
             set_sizer.Add(color_panel)
 
         return set_sizer
-        
