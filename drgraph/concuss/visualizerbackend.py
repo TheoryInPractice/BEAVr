@@ -353,19 +353,26 @@ class CountGenerator(object):
 
             # Color vertices in the header
             vertex_colors = []
+            line_widths = []
             subforest = self.get_subforest_vertices(vertices)
             for node in self.graph.nodes():
+                # Anonymous vertices are white with a normal outline
                 if node in subforest:
+                    line_widths.append(1)
                     vertex_colors.append([1, 1, 1])
+                # Boundary vertices are black with a normal outline
                 elif node in k_pattern:
+                    line_widths.append(1)
                     vertex_colors.append([0, 0, 0])
+                # Other vertices are gray with a thin outline
                 else:
+                    line_widths.append(0.5)
                     vertex_colors.append([0.8, 0.8, 0.8])
 
             k_pattern_attributes = {#"node_size" : sizes,
                                     "node_color" : vertex_colors,
                                     "width" : edge_width,
-                                    "linewidths" : line_width}
+                                    "linewidths" : line_widths}
             attribute_list.append(k_pattern_attributes)
 
             for motif in motifs:
