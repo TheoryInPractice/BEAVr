@@ -351,7 +351,20 @@ class CountGenerator(object):
             attribute_list.append(k_pattern_attributes)
 
             for motif in motifs:
-                # Attributes to highlight instances of motif
+                # Make the non-motif nodes small, and the boundary nodes big
+                node_sizes = []
+                for node in self.graph.nodes():
+                    if node in k_pattern:
+                        node_sizes.append(default_size * 2)
+                    elif node in motif.nodes():
+                        node_sizes.append(default_size)
+                    else:
+                        node_sizes.append(default_size * 0.5)
+
+                # Widen outlines of motif nodes
+                line_widths = [line_width * 3 if n in motif.nodes() else line_width for n in self.graph.nodes()]
+
+                # Widen the motif edges
                 edge_widths = []
                 motif_edges = motif.edges()
                 for edge in self.graph.edges():
@@ -360,16 +373,15 @@ class CountGenerator(object):
                     else:
                         edge_widths.append(edge_width)
 
-                line_widths = [line_width * 3 if n in motif.nodes() else line_width for n in self.graph.nodes()]
-
+                # Dashed non-motif edges, solid motif edges
                 style = []
                 for edge in self.graph.edges():
                     if edge in motif_edges or tuple(reversed(edge)) in motif_edges:
                         style.append("solid")
                     else:
                         style.append("dashed")
-                
-                motif_attributes = {"node_size" : sizes,
+
+                motif_attributes = {"node_size" : node_sizes,
                                     "width" : edge_widths,
                                     "linewidths" : line_widths,
                                     "style" : style}
