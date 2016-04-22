@@ -354,7 +354,6 @@ class CountGenerator(object):
             # Color vertices in the header
             vertex_colors = []
             subforest = self.get_subforest_vertices(vertices)
-            print k_pattern
             for node in self.graph.nodes():
                 if node in subforest:
                     vertex_colors.append([1, 1, 1])
