@@ -7,7 +7,7 @@ from networkx.algorithms import isomorphism
 from numpy import random
 
 class DecompositionGenerator(object):
-    layout_margin = 0.05
+    layout_margin = 0.15
 
     def __init__(self, graph, coloring):
         self.graph = graph
@@ -58,7 +58,7 @@ class DecompositionGenerator(object):
         grid_len = int(math.ceil(math.sqrt(len(layouts))))
         # TODO: Find a good value for this
         for layout in layouts:
-            grid_size = 1.5
+            grid_size = 1
             for index in layout:
                 layout[index] = [layout[index][0] + x_offset, layout[index][1] + y_offset]
             x_offset += grid_size
@@ -139,9 +139,9 @@ class DecompositionGenerator(object):
 
 
 class CountGenerator(object):
-    layout_margin = 0.05
+    layout_margin = 0.15
     k_pat_count = 3
-    subgraph_count = 5
+    subgraph_count = 4
 
     def __init__(self, graph, pattern, tdd, dptable, coloring):
         self.graph = graph
@@ -277,7 +277,7 @@ class CountGenerator(object):
         x_offset = 0
         for layouts in k_pattern_layouts:
             for layout in layouts:
-                grid_size = 1.5
+                grid_size = 1
                 for index in layout:
                     layout[index] = [layout[index][0] + x_offset, layout[index][1] + y_offset]
                 y_offset -= grid_size
