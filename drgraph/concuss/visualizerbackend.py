@@ -6,6 +6,8 @@ import networkx as nx
 from networkx.algorithms import isomorphism
 from numpy import random
 
+from drgraph.util import load_palette, map_coloring, map_colorings
+
 class DecompositionGenerator(object):
     layout_margin = 0.15
 
@@ -143,14 +145,18 @@ class CountGenerator(object):
     k_pat_count = 3
     subgraph_count = 4
 
-    def __init__(self, graph, pattern, tdd, dptable, coloring):
+    def __init__(self, graph, pattern, tdd, dptable, coloring, palette_name):
         self.graph = graph
         self.pattern = pattern
         self.tdd = tdd
         self.dptable = dptable
         self.coloring = coloring
 
+        self.palette = load_palette(palette_name)
+        self.mapped_coloring = map_coloring(self.palette, self.coloring)
+
         self.isomorphism_list = None
+        self.vertices_list = []
 
         self.get_patterns()
 
@@ -170,6 +176,8 @@ class CountGenerator(object):
             # If we didn't get a k-pattern, try again with another vertex set
             if k_pat is None:
                 continue
+            # Now that we know the vertex set is okay, remember it
+            self.vertices_list.append(vertices)
             # Get the vertices on its boundary
             k_pat_boundary_vertices = [root_path[v] for v in k_pat[2].itervalues()]
             # Select those for display
@@ -339,13 +347,24 @@ class CountGenerator(object):
         edge_width = 1.0
         line_width = 1.0
 
-        for k_pattern, motifs in zip(self.k_patterns, self.motifs):
+        for k_pattern, motifs, vertices in zip(self.k_patterns, self.motifs,
+                self.vertices_list):
             attribute_list = [] # List of attribute dictionaries for a k-pattern column
 
-            # Attributes to highlight k-pattern
-            sizes = [default_size * 2 if n in k_pattern else default_size for n in self.graph.nodes()]
+            # Color vertices in the header
+            vertex_colors = []
+            subforest = self.get_subforest_vertices(vertices)
+            print k_pattern
+            for node in self.graph.nodes():
+                if node in subforest:
+                    vertex_colors.append([1, 1, 1])
+                elif node in k_pattern:
+                    vertex_colors.append([0, 0, 0])
+                else:
+                    vertex_colors.append([0.8, 0.8, 0.8])
 
-            k_pattern_attributes = {"node_size" : sizes,
+            k_pattern_attributes = {#"node_size" : sizes,
+                                    "node_color" : vertex_colors,
                                     "width" : edge_width,
                                     "linewidths" : line_width}
             attribute_list.append(k_pattern_attributes)
@@ -363,6 +382,9 @@ class CountGenerator(object):
 
                 # Widen outlines of motif nodes
                 line_widths = [line_width * 3 if n in motif.nodes() else line_width for n in self.graph.nodes()]
+
+                # Color the nodes
+                comp_colors = [self.mapped_coloring[node] for node in self.graph.nodes()]
 
                 # Widen the motif edges
                 edge_widths = []
@@ -382,8 +404,9 @@ class CountGenerator(object):
                         style.append("dashed")
 
                 motif_attributes = {"node_size" : node_sizes,
-                                    "width" : edge_widths,
                                     "linewidths" : line_widths,
+                                    "node_color" : comp_colors,
+                                    "width" : edge_widths,
                                     "style" : style}
 
                 attribute_list.append(motif_attributes)
