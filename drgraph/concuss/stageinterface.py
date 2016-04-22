@@ -139,8 +139,21 @@ class CountInterface(StageInterface):
         """Fill the empty GUI elements with counting-specific widgets"""
         super(CountInterface, self).__init__(parent)
 
+        # Random Layout buton
+        tali_path = path.join(os.getcwd(), 'data', 'icons', 'tali.png')
+        rand_bmp = wx.Bitmap(tali_path, wx.BITMAP_TYPE_PNG)
+        rand = self.tb.AddLabelTool(wx.NewId(), "Random Patterns", rand_bmp)
+        self.Bind(wx.EVT_TOOL, self.on_random, rand)
+
+        self.tb.Realize()
+
         vis = CountVisualizer(self, graph, pattern, tdd, dptable, coloring)
         self.set_visualization(vis)
+
+    def on_random(self, e):
+        """Choose a new set of patterns for display"""
+        self.vis.randomize_patterns()
+        self.vis.update_graph_display()
 
 
 class CombineInterface(wx.Panel):
@@ -478,6 +491,10 @@ class CountVisualizer(MatplotlibVisualizer):
                 self.dptable, self.coloring)
         self.canvas.Bind(wx.EVT_PAINT, self.on_paint)
         self.update_graph_display()
+
+    def randomize_patterns(self):
+        """Select a new, random set of patterns to display"""
+        self.CG.get_patterns()
 
     def update_graph_display(self):
         self.axes.clear()

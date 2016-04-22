@@ -150,6 +150,8 @@ class CountGenerator(object):
         self.dptable = dptable
         self.coloring = coloring
 
+        self.isomorphism_list = None
+
         self.get_patterns()
 
     def get_patterns(self):
@@ -157,7 +159,7 @@ class CountGenerator(object):
         self.k_patterns = []
         self.motifs = []
 
-        for _ in range(self.k_pat_count):
+        while len(self.k_patterns) < self.k_pat_count:
             # Get a random set of vertices from the DP table
             vertices = random.choice(self.dptable.keys())
             # Get the root path
@@ -165,13 +167,14 @@ class CountGenerator(object):
 
             # Get a k-pattern from that part of the DP table
             k_pat = self.get_pattern(vertices, root_path)
+            # If we didn't get a k-pattern, try again with another vertex set
+            if k_pat is None:
+                continue
             # Get the vertices on its boundary
             k_pat_boundary_vertices = [root_path[v] for v in k_pat[2].itervalues()]
             # Select those for display
             self.k_patterns.append(k_pat_boundary_vertices)
 
-            # TODO: Highlight complete motifs the selected k-pattern
-            # participates in
             motifs = self.get_motifs_for_k_pattern(k_pat, vertices, root_path)
             self.motifs.append(motifs)
 
@@ -179,31 +182,40 @@ class CountGenerator(object):
         """Return an interesting k-pattern from the given part of the table"""
         good_pattern = False
 
-        # Localize variable for reuse
-        len_rp = len(root_path)
+        # Copy the part of the table we're interested in
+        subtable = list(self.dptable[vertices])
+        # Shuffle it to avoid being boring
+        random.shuffle(subtable)
+
         # While we don't have a good pattern
-        while not good_pattern:
+        for k_pat in subtable:
             good_pattern = True
-            # Get a new random pattern
-            k_pat = self.dptable[vertices][random.randint(len(self.dptable[vertices]))]
             pi = k_pat[2]
             # If pi is empty
             if len(pi) == 0:
                 good_pattern = False
             # Check if we don't have something
             for mapping in pi.itervalues():
-                if mapping >= len_rp:
+                if mapping >= len(root_path):
                     good_pattern = False
                     break
-        # Return the good k-pattern
-        return k_pat
+            if good_pattern:
+                # Return the good k-pattern
+                return k_pat
+        # At this point we've looked at every k-pattern and they all looked
+        # dreadfully boring, so return None
+        return None
 
     def get_motifs_for_k_pattern(self, k_pat, vertices, root_path):
         """Return a list of subgraphs isomorphic to the motif"""
         motifs = []
         sv = self.get_subforest_vertices(vertices)
-        gm = isomorphism.GraphMatcher(self.graph, self.pattern)
-        for im in gm.subgraph_isomorphisms_iter():
+
+        if self.isomorphism_list is None:
+            gm = isomorphism.GraphMatcher(self.graph, self.pattern)
+            self.isomorphism_list = list(gm.subgraph_isomorphisms_iter())
+
+        for im in self.isomorphism_list:
             matches_k_pat = True
             # Reverse the mapping
             imr = {v: k for k, v in im.iteritems()}
