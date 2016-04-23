@@ -347,8 +347,10 @@ class CountGenerator(object):
         edge_width = 1.0
         line_width = 1.0
 
-        for k_pattern, motifs, vertices in zip(self.k_patterns, self.motifs,
-                self.vertices_list):
+        layouts = self.get_layouts()
+
+        for k_pattern, motifs, vertices, layout_list in zip(self.k_patterns,
+                self.motifs, self.vertices_list, layouts):
             attribute_list = [] # List of attribute dictionaries for a k-pattern column
 
             # Color vertices in the header
@@ -369,13 +371,16 @@ class CountGenerator(object):
                     line_widths.append(0.5)
                     vertex_colors.append([0.8, 0.8, 0.8])
 
-            k_pattern_attributes = {#"node_size" : sizes,
-                                    "node_color" : vertex_colors,
-                                    "width" : edge_width,
-                                    "linewidths" : line_widths}
+            k_pattern_attributes = {
+                "node_color": vertex_colors,
+                "width": edge_width,
+                "linewidths": line_widths,
+                "with_labels": False,
+                "pos": layout_list[0]
+            }
             attribute_list.append(k_pattern_attributes)
 
-            for motif in motifs:
+            for motif, layout in zip(motifs, layout_list[1:]):
                 # Make the non-motif nodes small, and the boundary nodes big
                 node_sizes = []
                 for node in self.graph.nodes():
@@ -409,11 +414,15 @@ class CountGenerator(object):
                     else:
                         style.append("dashed")
 
-                motif_attributes = {"node_size" : node_sizes,
-                                    "linewidths" : line_widths,
-                                    "node_color" : comp_colors,
-                                    "width" : edge_widths,
-                                    "style" : style}
+                motif_attributes = {
+                    "node_size": node_sizes,
+                    "linewidths": line_widths,
+                    "node_color": comp_colors,
+                    "width": edge_widths,
+                    "style": style,
+                    "with_labels": False,
+                    "pos": layout
+                }
 
                 attribute_list.append(motif_attributes)
 

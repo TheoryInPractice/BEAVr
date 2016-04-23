@@ -498,13 +498,12 @@ class CountVisualizer(MatplotlibVisualizer):
         self.axes.clear()
         self.axes.set_axis_bgcolor((.8,.8,.8))
 
-        k_layouts = self.CG.get_layouts()
         graph_attributes = self.CG.get_attributes()
-        for layouts, attributes in zip(k_layouts, graph_attributes):
-            # TODO: draw the first two differently
-            for layout, attribute in zip(layouts, attributes):
-                nx.draw_networkx(self.graph, layout, ax=self.axes,
-                        with_labels=False, **attribute)
+        for attributes in graph_attributes:
+            nx.draw_networkx(self.pattern, ax=self.axes,
+                    with_labels=False)
+            for attribute in attributes:
+                nx.draw_networkx(self.graph, ax=self.axes, **attribute)
 
         self.canvas.Refresh()
 
