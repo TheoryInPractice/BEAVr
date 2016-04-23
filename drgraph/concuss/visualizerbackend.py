@@ -38,7 +38,8 @@ class DecompositionGenerator(object):
             for n in new_cc.node:
                 new_cc.node[n]['color'] = self.coloring[n]
             for i, cc in enumerate(cc_list):
-                if nx.is_isomorphic(new_cc, cc, node_match=self.nm):
+                if nx.is_isomorphic(new_cc, cc,
+                        node_match=lambda n1, n2: n1['color'] == n2['color']):
                     cc_list[i].occ += 1
                     found = True
                     break
@@ -46,9 +47,6 @@ class DecompositionGenerator(object):
                 new_cc.occ = 1
                 cc_list.append(new_cc)
         return cc_list
-
-    def nm(self, n1, n2):
-        return n1['color'] == n2['color']
 
     def get_tree_layouts(self, connected_components, coloring):
         layouts = []
