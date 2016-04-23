@@ -500,9 +500,8 @@ class CountVisualizer(MatplotlibVisualizer):
 
         graph_attributes = self.CG.get_attributes()
         for attributes in graph_attributes:
-            nx.draw_networkx(self.pattern, ax=self.axes,
-                    with_labels=False)
-            for attribute in attributes:
+            nx.draw_networkx(self.pattern, ax=self.axes, **attributes[0])
+            for attribute in attributes[1:]:
                 nx.draw_networkx(self.graph, ax=self.axes, **attribute)
 
         self.canvas.Refresh()
