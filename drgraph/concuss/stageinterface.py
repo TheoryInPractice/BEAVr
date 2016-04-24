@@ -626,6 +626,7 @@ class CombinePage(wx.Panel):
         text = wx.StaticText(self.scrolledpanel, -1, 'Final total: ' + str(total))
         modified_font=text.GetFont()
         modified_font.SetPixelSize((20,20))
+        modified_font.SetWeight(wx.FONTWEIGHT_BOLD)
         text.SetFont(modified_font)
         self.sizer.Add(text, 0, wx.RIGHT|wx.LEFT|wx.ALIGN_RIGHT, 12)
 
@@ -671,6 +672,7 @@ class InExTermWidget(wx.Panel):
         text = wx.StaticText(self, -1, text_str, size=(110,20))
         modified_font=text.GetFont()
         modified_font.SetPixelSize((20,20))
+        modified_font.SetWeight(wx.FONTWEIGHT_BOLD)
         text.SetFont(modified_font)
         self.sizer.Add(text, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 12)
 
