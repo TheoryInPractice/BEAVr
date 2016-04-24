@@ -2,7 +2,7 @@ from os.path import basename, splitext
 import collections
 
 from networkx import Graph
-
+import ast
 from drgraph.dataloader import DataLoader
 
 class Factory(object):
@@ -30,6 +30,7 @@ class ConcussDataLoader(DataLoader):
         self.big_component = self.load_big_component()
         self.table = self.load_dp_table()
         self.tdd = self.load_tdd()
+        self.counts_per_colorset= self.load_counts()
 
     def load_graph(self):
         """
@@ -66,6 +67,24 @@ class ConcussDataLoader(DataLoader):
         with self.archive.open(pattern_name, 'r') as pattern_file:
             # Use correct reader to get and return NetworkX graph from graph file
             return graph_reader(pattern_file)
+
+    def load_counts(self):
+        """
+        Load counts for the Combine tab
+        Returns:
+
+        """
+        colorset_count_filename = 'combine/counts_per_colorset.txt'
+        counts_per_set = {}
+        with self.archive.open(colorset_count_filename, 'r') as colorset_count_file:
+            for line in colorset_count_file:
+                line = line.strip()
+                set_and_count = line.strip().split(":")
+                colorset = ast.literal_eval(set_and_count[0].strip())
+                count = int(set_and_count[1].strip())
+                counts_per_set[colorset] = count
+
+        return counts_per_set
 
     def load_big_component(self):
         """
@@ -148,7 +167,6 @@ class ConcussDataLoader(DataLoader):
                      where pi maps vertices in $k_pat_vertices$ to labels
         """
 
-        import ast
         dp_table_filename = "count/dp_table.txt"
         table = {}
         with self.archive.open(dp_table_filename, 'r') as dp_table_file:

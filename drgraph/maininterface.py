@@ -172,7 +172,8 @@ class MainInterface(wx.Frame):
                 colorings = [[0,1,0,1], [0,1,0,2],[3,4,1,3], [0,1,2,3]]
             colors = set(dl.colorings[-1])
             combineStage = CombineInterface(self.notebook, dl.pattern,
-                                            colorings, colors, 2)
+                                            colorings, colors, len(min(dl.counts_per_colorset.keys(), key=len)),
+                                            dl.counts_per_colorset)
             self.add_tab(combineStage)
 
     def OnQuit(self, e):

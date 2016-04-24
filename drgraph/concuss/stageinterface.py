@@ -13,7 +13,7 @@ from matplotlib.figure import Figure
 
 from drgraph.stageinterface import StageInterface, StageVisualizer, MatplotlibVisualizer
 from drgraph.concuss.visualizerbackend import DecompositionGenerator, CombineSetGenerator, CountGenerator
-from drgraph.util import load_palette, map_coloring, map_colorings
+from drgraph.util import load_palette, map_coloring, map_colorings, choose
 
 class ColorInterface(StageInterface):
     """GUI elements for CONCUSS coloring stage visualization"""
@@ -161,7 +161,7 @@ class CombineInterface(wx.Panel):
 
     name = "Combine"
 
-    def __init__(self, parent, pattern, colorings, colors, min_size):
+    def __init__(self, parent, pattern, colorings, colors, min_size, counts_per_colorset):
         """Fill the empty GUI elements with combination-specific widgets"""
         super(CombineInterface, self).__init__(parent)
 
@@ -170,6 +170,7 @@ class CombineInterface(wx.Panel):
         self.colorings = colorings
         self.colors = colors
         self.min_size = min_size
+        self.counts_per_colorset = counts_per_colorset
 
         # Make the sizer
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -199,8 +200,8 @@ class CombineInterface(wx.Panel):
                               self.pattern_size, self.min_size)
             self.listbook.AddPage(tab, '', imageId=i)
         # Add total tab
-        tab = CombinePage(self, -1, set(), self.colors, self.pattern_size,
-                          self.min_size)
+        tab = CombinePage(self, -1, self.colors, self.colors, self.pattern_size,
+                          self.min_size, self.counts_per_colorset, is_totals_page=True)
         self.listbook.AddPage(tab, '', imageId=len(icons)-1)
 
     def add_image_list(self, icons):
@@ -572,29 +573,60 @@ class CombinePage(wx.Panel):
     bar, though it is still possible to scroll using the scroll wheel.
     """
 
-    def __init__(self, parent, id, color_set, colors, pattern_size, min_size):
+    def __init__(self, parent, id, color_set, colors, pattern_size, min_size, counts_per_colorset=None,
+                 is_totals_page=False):
         super(CombinePage, self).__init__(parent, id)
 
         outersizer = wx.BoxSizer(wx.VERTICAL)
-
         self.scrolledpanel = ScrolledPanel(self, -1, style=wx.TAB_TRAVERSAL)
-
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-
-        self.CSG = CombineSetGenerator(color_set, colors, pattern_size, min_size)
-        c_sets_by_size = self.CSG.get_color_sets()
 
         # Display a max of 100 color sets for each set size
         max_sets_coef = 100/math.log(pattern_size)
+        count_by_size = {}
+
+        # compute inclusion exclusion coefficients
+        in_ex = []
+        for n_colors in range(pattern_size, -1, -1):
+            # For inclusion/exclusion principle, we either need to add or
+            # subtract the count for a specific set of colors in order to avoid
+            # double counting. We count the number of times a color combination
+            # of size numColors was counted in the color combinations of size
+            # greater than numColors and adjust our count accordingly.
+            discrepancy = pattern_size - n_colors
+            remaining_colors = len(colors) - n_colors
+            in_ex_modifier = 1 - sum([choose(remaining_colors, discrepancy-i) *
+                                      mod for i, mod in enumerate(in_ex)])
+            in_ex.append(in_ex_modifier)
+
+        # If this is the totals page
+        if is_totals_page:
+            c_sets_by_size = []
+            # Add up counts for each size of color sets
+            for c_set, count in counts_per_colorset.iteritems():
+                len_c_set = len(c_set)
+                if len_c_set in count_by_size:
+                    count_by_size[len_c_set] += count
+                else:
+                    count_by_size[len_c_set] = count
+            # Add color sets from CONCUSS's output instead of generating them again
+            for i in range(pattern_size, min_size - 1, -1):
+                c_sets_by_size.append([set(colorset) for colorset in counts_per_colorset.keys() if len(colorset) == i])
+
+        else:
+            self.CSG = CombineSetGenerator(color_set, colors, pattern_size, min_size)
+            c_sets_by_size = self.CSG.get_color_sets()
+
         total = 0
         add = len(c_sets_by_size) % 2 == 1
         for c_sets in c_sets_by_size:
             max_sets = int(max_sets_coef*math.log(len(c_sets[0])))
-            inexterm = InExTermWidget(self.scrolledpanel, c_sets, color_set,\
-                                      colors, pattern_size, add, max_sets)
+            inexterm = InExTermWidget(self.scrolledpanel, c_sets, in_ex,
+                                      colors, pattern_size, add, max_sets, count_by_size, totals_term=is_totals_page)
             self.sizer.Add(inexterm, 0, wx.EXPAND|wx.BOTTOM, 12)
             total += inexterm.total
             add = not add
+
         text = wx.StaticText(self.scrolledpanel, -1, 'Final total: ' + str(total))
         modified_font=text.GetFont()
         modified_font.SetPixelSize((20,20))
@@ -612,26 +644,33 @@ class CombinePage(wx.Panel):
 class InExTermWidget(wx.Panel):
     """A GUI widget one term of the inclusion-exclusion equation"""
 
-    def __init__(self, parent, color_sets, color_set, colors, pattern_size,\
-                 add, max_sets):
+    def __init__(self, parent, color_sets, in_ex_coefficients, colors, pattern_size,\
+                 add, max_sets, counts_per_colorset_size, totals_term=True):
         super(InExTermWidget, self).__init__(parent, -1)
 
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        # Calculate inclusion/exclusion coefficient
-        coef = 1
-        remaining_colors = len(colors) - len(color_sets[0])
-        for i in range(pattern_size-len(color_sets[0]), 0, -1):
-            coef += math.factorial(remaining_colors)/ \
-                    (math.factorial(i)*math.factorial(remaining_colors-i))
-        if not add:
-            coef *= -1
+        if not totals_term:
+            # Calculate inclusion/exclusion coefficient
+            coef = 1
+            remaining_colors = len(colors) - len(color_sets[0])
+            for i in range(pattern_size-len(color_sets[0]), 0, -1):
+                coef += math.factorial(remaining_colors)/ \
+                        (math.factorial(i)*math.factorial(remaining_colors-i))
+            if not add:
+                coef *= -1
+        else:
+            # Use coefficient from inclusion exclusion table
+            coef = in_ex_coefficients[pattern_size - len(color_sets[0])]
 
         # Add the first text
         coef_str = str(coef)
         if coef >= 0:
             coef_str = '+' + coef_str
-        text_str = coef_str + u' \u00d7 ' + str(len(color_sets))
+        if counts_per_colorset_size:
+            text_str = coef_str + u' \u00d7 ' + str(counts_per_colorset_size[len(color_sets[0])])
+        else:
+            text_str = coef_str + u' \u00d7 ' + str(len(color_sets))
         text_str = ' ' * (12-len(text_str)) + text_str
         text = wx.StaticText(self, -1, text_str, size=(110,20))
         modified_font=text.GetFont()
@@ -655,7 +694,11 @@ class InExTermWidget(wx.Panel):
 
         # Add the second text
         self.coef = coef
-        self.total = len(color_sets)*coef
+
+        if totals_term:
+            self.total = counts_per_colorset_size[len(color_sets[0])] * coef
+        else:
+            self.total = len(color_sets)*coef
         text2 = wx.StaticText(self, -1, "= "+str(self.total), size=(70,20))
         text2.SetFont(modified_font)
         self.sizer.Add(text2, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 12)
