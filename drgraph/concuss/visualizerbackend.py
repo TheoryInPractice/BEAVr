@@ -6,6 +6,8 @@ import networkx as nx
 from networkx.algorithms import isomorphism
 from numpy import random
 
+from drgraph.util import load_palette, map_coloring, map_colorings
+
 class DecompositionGenerator(object):
     layout_margin = 0.15
 
@@ -36,7 +38,8 @@ class DecompositionGenerator(object):
             for n in new_cc.node:
                 new_cc.node[n]['color'] = self.coloring[n]
             for i, cc in enumerate(cc_list):
-                if nx.is_isomorphic(new_cc, cc, node_match=self.nm):
+                if nx.is_isomorphic(new_cc, cc,
+                        node_match=lambda n1, n2: n1['color'] == n2['color']):
                     cc_list[i].occ += 1
                     found = True
                     break
@@ -44,9 +47,6 @@ class DecompositionGenerator(object):
                 new_cc.occ = 1
                 cc_list.append(new_cc)
         return cc_list
-
-    def nm(self, n1, n2):
-        return n1['color'] == n2['color']
 
     def get_tree_layouts(self, connected_components, coloring):
         layouts = []
@@ -56,7 +56,6 @@ class DecompositionGenerator(object):
         y_offset = 0
         x_offset = 0
         grid_len = int(math.ceil(math.sqrt(len(layouts))))
-        # TODO: Find a good value for this
         for layout in layouts:
             grid_size = 1
             for index in layout:
@@ -143,20 +142,25 @@ class CountGenerator(object):
     k_pat_count = 3
     subgraph_count = 4
 
-    def __init__(self, graph, pattern, tdd, dptable, coloring):
+    def __init__(self, graph, pattern, tdd, dptable, coloring, palette_name):
         self.graph = graph
         self.pattern = pattern
         self.tdd = tdd
         self.dptable = dptable
         self.coloring = coloring
 
+        self.palette = load_palette(palette_name)
+        self.mapped_coloring = map_coloring(self.palette, self.coloring)
+
         self.isomorphism_list = None
+        self.vertices_list = []
 
         self.get_patterns()
 
     def get_patterns(self):
         """Get some k-patterns and complete motifs"""
         self.k_patterns = []
+        self.k_pattern_mapped = []
         self.motifs = []
 
         while len(self.k_patterns) < self.k_pat_count:
@@ -170,11 +174,16 @@ class CountGenerator(object):
             # If we didn't get a k-pattern, try again with another vertex set
             if k_pat is None:
                 continue
-            # Get the vertices on its boundary
+            # Now that we know the vertex set is okay, remember it
+            self.vertices_list.append(vertices)
+            # Get the vertices on the k-pattern's boundary
             k_pat_boundary_vertices = [root_path[v] for v in k_pat[2].itervalues()]
             # Select those for display
-            self.k_patterns.append(k_pat_boundary_vertices)
+            self.k_pattern_mapped.append(k_pat_boundary_vertices)
+            # Remember the whole k-pattern too
+            self.k_patterns.append(k_pat)
 
+            # Select some motifs for display
             motifs = self.get_motifs_for_k_pattern(k_pat, vertices, root_path)
             self.motifs.append(motifs)
 
@@ -187,20 +196,20 @@ class CountGenerator(object):
         # Shuffle it to avoid being boring
         random.shuffle(subtable)
 
-        # While we don't have a good pattern
+        # Look at all the k-patterns in a shuffled order
         for k_pat in subtable:
             good_pattern = True
             pi = k_pat[2]
-            # If pi is empty
-            if len(pi) == 0:
+            # Make sure we have a non-empty boundary
+            if not pi:
                 good_pattern = False
-            # Check if we don't have something
+            # Make sure the k-pattern can actually map to the component
             for mapping in pi.itervalues():
                 if mapping >= len(root_path):
                     good_pattern = False
                     break
+            # If the k-pattern looks interesting, return it
             if good_pattern:
-                # Return the good k-pattern
                 return k_pat
         # At this point we've looked at every k-pattern and they all looked
         # dreadfully boring, so return None
@@ -265,10 +274,17 @@ class CountGenerator(object):
 
     def get_layouts(self):
         k_pattern_layouts = []
-        for k_pattern, motifs in zip(self.k_patterns, self.motifs):
+        # Compute layout for the k-pattern
+        layout = nx.spring_layout(self.pattern,
+                scale=1-2*self.layout_margin-0.01, center=(0.5, 0.5))
+        for motifs in self.motifs:
             motif_layouts = []
+            # Layout for k-pattern
+            motif_layouts.append(dict(layout))
+            # Layout for k-pattern highlighted in component
             motif_layouts.append(self.get_layout(self.graph))
-            for motif in motifs:
+            # Layouts for component copies
+            for _ in motifs:
                 motif_layouts.append(self.get_layout(self.graph))
             k_pattern_layouts.append(motif_layouts)
                 
@@ -339,19 +355,94 @@ class CountGenerator(object):
         edge_width = 1.0
         line_width = 1.0
 
-        for k_pattern, motifs in zip(self.k_patterns, self.motifs):
-            attribute_list = [] # List of attribute dictionaries for a k-pattern column
+        layouts = self.get_layouts()
 
-            # Attributes to highlight k-pattern
-            sizes = [default_size * 2 if n in k_pattern else default_size for n in self.graph.nodes()]
+        for k_pattern, boundary_map, motifs, vertices, layout_list in zip(
+                self.k_patterns, self.k_pattern_mapped, self.motifs,
+                self.vertices_list, layouts):
+            # List of attribute dictionaries for a k-pattern column
+            attribute_list = []
 
-            k_pattern_attributes = {"node_size" : sizes,
-                                    "width" : edge_width,
-                                    "linewidths" : line_width}
+            # First, attributes for the k-pattern itself
+            vertex_colors = []
+            line_widths = []
+            labels = {}
+            # Color the nodes
+            for node in self.pattern.nodes():
+                # Boundary vertices are black with a normal outline
+                if node in k_pattern[2].keys():
+                    line_widths.append(1)
+                    vertex_colors.append([0, 0, 0])
+                    labels[node] = k_pattern[2][node]
+                # Anonymous vertices are white with a normal outline
+                elif node in k_pattern[1]:
+                    line_widths.append(1)
+                    vertex_colors.append([1, 1, 1])
+                # Other vertices are gray with a thin outline
+                else:
+                    line_widths.append(0.5)
+                    vertex_colors.append([0.8, 0.8, 0.8])
+
+            k_pattern_attributes = {
+                "node_color": vertex_colors,
+                "linewidths": line_widths,
+                "pos": layout_list[0],
+                "with_labels": True,
+                "labels": labels,
+                "font_color": 'w'
+            }
             attribute_list.append(k_pattern_attributes)
 
-            for motif in motifs:
-                # Attributes to highlight instances of motif
+            # Next, attributes for the k-pattern in the subgraph
+            # Color vertices in the header
+            vertex_colors = []
+            line_widths = []
+            labels = {}
+            subforest = self.get_subforest_vertices(vertices)
+            for node in self.graph.nodes():
+                # Anonymous vertices are white with a normal outline
+                if node in subforest:
+                    line_widths.append(1)
+                    vertex_colors.append([1, 1, 1])
+                # Boundary vertices are black with a normal outline
+                elif node in boundary_map:
+                    line_widths.append(1)
+                    vertex_colors.append([0, 0, 0])
+                    labels[node] = self.root_path_index(node)
+                # Other vertices are gray with a thin outline
+                else:
+                    line_widths.append(0.5)
+                    vertex_colors.append([0.8, 0.8, 0.8])
+
+            k_pattern_attributes = {
+                "node_color": vertex_colors,
+                "width": edge_width,
+                "linewidths": line_widths,
+                "pos": layout_list[1],
+                "with_labels": True,
+                "labels": labels,
+                "font_color": 'w'
+            }
+            attribute_list.append(k_pattern_attributes)
+
+            for motif, layout in zip(motifs, layout_list[2:]):
+                # Make the non-motif nodes small, and the boundary nodes big
+                node_sizes = []
+                for node in self.graph.nodes():
+                    if node in boundary_map:
+                        node_sizes.append(default_size * 2)
+                    elif node in motif.nodes():
+                        node_sizes.append(default_size)
+                    else:
+                        node_sizes.append(default_size * 0.5)
+
+                # Widen outlines of motif nodes
+                line_widths = [line_width * 3 if n in motif.nodes() else line_width for n in self.graph.nodes()]
+
+                # Color the nodes
+                comp_colors = [self.mapped_coloring[node] for node in self.graph.nodes()]
+
+                # Widen the motif edges
                 edge_widths = []
                 motif_edges = motif.edges()
                 for edge in self.graph.edges():
@@ -360,25 +451,34 @@ class CountGenerator(object):
                     else:
                         edge_widths.append(edge_width)
 
-                line_widths = [line_width * 3 if n in motif.nodes() else line_width for n in self.graph.nodes()]
-
+                # Dashed non-motif edges, solid motif edges
                 style = []
                 for edge in self.graph.edges():
                     if edge in motif_edges or tuple(reversed(edge)) in motif_edges:
                         style.append("solid")
                     else:
                         style.append("dashed")
-                
-                motif_attributes = {"node_size" : sizes,
-                                    "width" : edge_widths,
-                                    "linewidths" : line_widths,
-                                    "style" : style}
+
+                motif_attributes = {
+                    "node_size": node_sizes,
+                    "linewidths": line_widths,
+                    "node_color": comp_colors,
+                    "width": edge_widths,
+                    "style": style,
+                    "with_labels": False,
+                    "pos": layout
+                }
 
                 attribute_list.append(motif_attributes)
 
             attributes.append(attribute_list)
 
         return attributes 
+
+    def root_path_index(self, vertex):
+        """Return the index of the given vertex on a root path"""
+        return nx.shortest_path_length(self.tdd, source=vertex,
+                target=self.get_tdd_root())
 
     def get_tdd_root(self):
         """Find the root of the treedepth decomposition"""

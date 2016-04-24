@@ -485,11 +485,9 @@ class CountVisualizer(MatplotlibVisualizer):
         self.tdd = tdd
         self.dptable = dptable
 
-        self.palette = load_palette(palette_name)
-        self.mapped_coloring = map_coloring(self.palette, self.coloring)
         self.colorset = [self.coloring[node] for node in self.tdd.nodes()]
         self.CG = CountGenerator(self.graph, self.pattern, self.tdd,
-                self.dptable, self.coloring)
+                self.dptable, self.coloring, palette_name)
         self.canvas.Bind(wx.EVT_PAINT, self.on_paint)
         self.update_graph_display()
 
@@ -501,13 +499,11 @@ class CountVisualizer(MatplotlibVisualizer):
         self.axes.clear()
         self.axes.set_axis_bgcolor((.8,.8,.8))
 
-        k_layouts = self.CG.get_layouts()
         graph_attributes = self.CG.get_attributes()
-        comp_colors = [self.mapped_coloring[node] for node in self.graph.nodes()]
-        for layouts, attributes in zip(k_layouts, graph_attributes):
-            for layout, attribute in zip(layouts, attributes):
-                nx.draw_networkx(self.graph, layout, ax=self.axes,
-                        node_color=comp_colors, with_labels=False, **attribute)
+        for attributes in graph_attributes:
+            nx.draw_networkx(self.pattern, ax=self.axes, **attributes[0])
+            for attribute in attributes[1:]:
+                nx.draw_networkx(self.graph, ax=self.axes, **attribute)
 
         self.canvas.Refresh()
 
@@ -553,7 +549,7 @@ class CountVisualizer(MatplotlibVisualizer):
         dc.DrawText(cs_label, margin, margin)
         for color in color_set:
             rgb = [int(channel * 255) for channel in
-                    self.palette[color%len(self.palette)]]
+                    self.CG.palette[color%len(self.CG.palette)]]
             dc.SetBrush(wx.Brush(wx.Colour(rgb[0], rgb[1], rgb[2])))
             dc.DrawRectangle(color_box_x, color_box_y, color_box_size,
                     color_box_size)
