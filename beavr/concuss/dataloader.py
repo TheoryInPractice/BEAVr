@@ -34,10 +34,15 @@ class ConcussDataLoader(DataLoader):
         self.title_items = self.load_title_items()
 
     def load_title_items(self):
+        """
+        Load name of graph, pattern and config used during CONCUSS run
+        Returns: name of the graph, name of the pattern and name of config used
+
+        """
         graph_name = self.parser.get('graphs', 'graph')
         pattern_name = self.parser.get('graphs', 'motif')
-        config = [item.strip() for item in self.parser.get('pipeline', 'command').split() if "config" in item][0]
-        config = config.split("/")[-1].strip()
+        config_path = [item.strip() for item in self.parser.get('pipeline', 'command').split() if "config" in item][0]
+        config = config_path.split("/")[-1].strip()
 
         return graph_name, pattern_name, config
 
