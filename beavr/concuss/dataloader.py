@@ -3,7 +3,7 @@ import collections
 
 from networkx import Graph
 import ast
-from drgraph.dataloader import DataLoader
+from beavr.dataloader import DataLoader
 
 class Factory(object):
     """ Wrapper allowing DataLoaderFactory to create a ConcussDataLoader """

@@ -1,5 +1,5 @@
 import unittest
-from drgraph import util
+from beavr import util
 
 class TestUtil(unittest.TestCase):
 

@@ -6,7 +6,7 @@ import networkx as nx
 from networkx.algorithms import isomorphism
 from numpy import random
 
-from drgraph.util import load_palette, map_coloring, map_colorings
+from beavr.util import load_palette, map_coloring, map_colorings
 
 class DecompositionGenerator(object):
     layout_margin = 0.15

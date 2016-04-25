@@ -54,7 +54,7 @@ class DataLoaderFactory(object):
 
         # Import DataLoader class for the given pipeline
         try:
-            pipe_loader = import_module('drgraph.' + pipe_name + '.dataloader')
+            pipe_loader = import_module('beavr.' + pipe_name + '.dataloader')
         except ImportError:
             raise UnknownPipelineError(pipe_name)
             

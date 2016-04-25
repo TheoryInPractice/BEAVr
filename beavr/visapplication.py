@@ -2,7 +2,7 @@ import argparse
 
 import wx
 
-from drgraph.maininterface import MainInterface
+from beavr.maininterface import MainInterface
 
 class VisApplication(wx.App):
     """The wxPython application class for the visualization tool"""
@@ -19,7 +19,7 @@ class VisApplication(wx.App):
         args = parser.parse_args()
 
         # Set up the configuration file
-        self.config = wx.Config("drgraph")
+        self.config = wx.Config("beavr")
         wx.ConfigBase.Set(self.config)
 
         # Create and show the main window

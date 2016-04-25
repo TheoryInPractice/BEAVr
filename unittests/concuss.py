@@ -2,7 +2,7 @@ import unittest
 
 import networkx as nx
 
-from drgraph.concuss import visualizerbackend
+from beavr.concuss import visualizerbackend
 
 class TestDecompositionGenerator(unittest.TestCase):
 

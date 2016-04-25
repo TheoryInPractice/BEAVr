@@ -6,14 +6,14 @@ from zipfile import BadZipfile
 import wx
 import networkx as nx
 
-from drgraph.concuss.stageinterface import (
+from beavr.concuss.stageinterface import (
     ColorInterface,
     DecomposeInterface,
     CountInterface,
     CombineInterface
 )
-from drgraph.stageinterface import DummyStageInterface
-from drgraph.dataloader import DataLoaderFactory, UnknownPipelineError
+from beavr.stageinterface import DummyStageInterface
+from beavr.dataloader import DataLoaderFactory, UnknownPipelineError
 
 class MainInterface(wx.Frame):
     """
@@ -28,7 +28,7 @@ class MainInterface(wx.Frame):
 
     def __init__(self, parent, filename=None):
         """Create the main window and all its GUI elements"""
-        super(MainInterface, self).__init__(parent, title="Visualization Tool")
+        super(MainInterface, self).__init__(parent, title="BEAVr")
 
         self.Bind(wx.EVT_CLOSE, self.OnClose)
 
@@ -154,7 +154,7 @@ class MainInterface(wx.Frame):
         else:
             # Set the title bar
             graph_name, pattern_name, config_name = self.dl.title_items
-            title_text = u"Visualization Tool \u2014 " + graph_name + ", " + pattern_name + " (" + config_name + ")"
+            title_text = u"BEAVr \u2014 " + graph_name + ", " + pattern_name + " (" + config_name + ")"
             self.SetTitle(title_text)
 
             colorStage = ColorInterface(self.notebook)
@@ -174,7 +174,7 @@ class MainInterface(wx.Frame):
             if self.dl.pattern.number_of_nodes() == 3:
                 colorings = [[0,1,0], [2,3,2],[0,1,2], [3, 4, 5]]
             elif self.dl.pattern.number_of_nodes() == 4:
-                colorings = [[0,1,0,1], [0,1,0,2],[3,4,1,3], [0,1,2,3]]
+                colorings = [[0, 1, 2, 3], [0, 1, 2, 5], [0, 1, 0, 2], [3, 4, 1, 3]]
             colors = set(self.dl.colorings[-1])
             combineStage = CombineInterface(self.notebook, self.dl.pattern,
                                             colorings, colors, len(min(self.dl.counts_per_colorset.keys(), key=len)),

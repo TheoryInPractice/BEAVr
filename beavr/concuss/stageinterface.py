@@ -11,9 +11,9 @@ matplotlib.use('WXAgg')
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
-from drgraph.stageinterface import StageInterface, StageVisualizer, MatplotlibVisualizer
-from drgraph.concuss.visualizerbackend import DecompositionGenerator, CombineSetGenerator, CountGenerator
-from drgraph.util import load_palette, map_coloring, map_colorings, choose
+from beavr.stageinterface import StageInterface, StageVisualizer, MatplotlibVisualizer
+from beavr.concuss.visualizerbackend import DecompositionGenerator, CombineSetGenerator, CountGenerator
+from beavr.util import load_palette, map_coloring, map_colorings, choose
 
 class ColorInterface(StageInterface):
     """GUI elements for CONCUSS coloring stage visualization"""
