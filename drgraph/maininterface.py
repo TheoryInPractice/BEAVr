@@ -45,6 +45,10 @@ class MainInterface(wx.Frame):
         if filename is not None:
             self.load_file(filename)
 
+        graph_name, pattern_name, config_name = self.dl.title_items
+        title_text = u"Visualization Tool \u2014 " + graph_name + ", " + pattern_name + " (" + config_name + ")"
+        self.SetTitle(title_text)
+
     def _make_menubar(self):
         """Create, populate, and show the menubar"""
         # Menubar setup
@@ -141,7 +145,7 @@ class MainInterface(wx.Frame):
     def load_file(self, filename):
         dlf = DataLoaderFactory()
         try:
-            dl = dlf.load_data(filename)
+            self.dl = dlf.load_data(filename)
         except (KeyError, BadZipfile) as e:
             print e
             e_dlg = wx.MessageDialog(None, 'File does not contain valid ' +
@@ -155,25 +159,25 @@ class MainInterface(wx.Frame):
             colorStage = ColorInterface(self.notebook)
             self.remove_all_tabs()
             self.add_tab(colorStage)
-            colorStage.vis.set_graph(dl.graph, dl.colorings)
+            colorStage.vis.set_graph(self.dl.graph, self.dl.colorings)
 
-            decomposeStage = DecomposeInterface(self.notebook, dl.graph,
-                    dl.pattern, dl.colorings[-1])
+            decomposeStage = DecomposeInterface(self.notebook, self.dl.graph,
+                    self.dl.pattern, self.dl.colorings[-1])
             self.add_tab(decomposeStage)
 
-            countStage = CountInterface(self.notebook, dl.big_component,
-                    dl.pattern, dl.tdd, dl.table, dl.colorings[-1])
+            countStage = CountInterface(self.notebook, self.dl.big_component,
+                    self.dl.pattern, self.dl.tdd, self.dl.table, self.dl.colorings[-1])
             self.add_tab(countStage)
 
             #TODO: change colorings
-            if dl.pattern.number_of_nodes() == 3:
+            if self.dl.pattern.number_of_nodes() == 3:
                 colorings = [[0,1,0], [2,3,2],[0,1,2], [3, 4, 5]]
-            elif dl.pattern.number_of_nodes() == 4:
+            elif self.dl.pattern.number_of_nodes() == 4:
                 colorings = [[0,1,0,1], [0,1,0,2],[3,4,1,3], [0,1,2,3]]
-            colors = set(dl.colorings[-1])
-            combineStage = CombineInterface(self.notebook, dl.pattern,
-                                            colorings, colors, len(min(dl.counts_per_colorset.keys(), key=len)),
-                                            dl.counts_per_colorset)
+            colors = set(self.dl.colorings[-1])
+            combineStage = CombineInterface(self.notebook, self.dl.pattern,
+                                            colorings, colors, len(min(self.dl.counts_per_colorset.keys(), key=len)),
+                                            self.dl.counts_per_colorset)
             self.add_tab(combineStage)
 
     def OnQuit(self, e):

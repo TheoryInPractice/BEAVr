@@ -31,6 +31,15 @@ class ConcussDataLoader(DataLoader):
         self.table = self.load_dp_table()
         self.tdd = self.load_tdd()
         self.counts_per_colorset= self.load_counts()
+        self.title_items = self.load_title_items()
+
+    def load_title_items(self):
+        graph_name = self.parser.get('graphs', 'graph')
+        pattern_name = self.parser.get('graphs', 'motif')
+        config = [item.strip() for item in self.parser.get('pipeline', 'command').split() if "config" in item][0]
+        config = config.split("/")[-1].strip()
+
+        return graph_name, pattern_name, config
 
     def load_graph(self):
         """
