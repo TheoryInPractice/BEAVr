@@ -153,7 +153,6 @@ class CountGenerator(object):
         self.mapped_coloring = map_coloring(self.palette, self.coloring)
 
         self.isomorphism_list = None
-        self.vertices_list = []
 
         self.get_patterns()
 
@@ -162,6 +161,7 @@ class CountGenerator(object):
         self.k_patterns = []
         self.k_pattern_mapped = []
         self.motifs = []
+        self.vertices_list = []
 
         while len(self.k_patterns) < self.k_pat_count:
             # Get a random set of vertices from the DP table
@@ -237,6 +237,12 @@ class CountGenerator(object):
                 # Check that non-boundary vertices in the k-pattern are in the
                 # right part of the graph
                 elif imr[v] not in sv:
+                    matches_k_pat = False
+                    break
+            # Make sure that the vertices in the k-pattern aren't in the
+            # subforest
+            for cv, pv in im.iteritems():
+                if pv not in k_pat[1] and cv in sv:
                     matches_k_pat = False
                     break
             # Check that im matches the k-pattern
