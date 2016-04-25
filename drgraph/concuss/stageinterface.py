@@ -684,7 +684,7 @@ class InExTermWidget(wx.Panel):
 
         # Add ellipsis if we aren't displaying all of the color sets
         if len(color_sets) > max_sets:
-            text = wx.StaticText(self, -1, "...", size=(20,20))
+            text = wx.StaticText(self, -1, "...")
             text.SetFont(modified_font)
             self.color_set_sizer.Add(text, 1, wx.BOTTOM|wx.RIGHT, 12)
 
