@@ -664,17 +664,25 @@ class InExTermWidget(wx.Panel):
         coef_str = str(coef)
         if coef >= 0:
             coef_str = '+' + coef_str
-        if counts_per_colorset_size:
-            text_str = coef_str + u' \u00d7 ' + str(counts_per_colorset_size[len(color_sets[0])])
-        else:
-            text_str = coef_str + u' \u00d7 ' + str(len(color_sets))
-        text_str = ' ' * (12-len(text_str)) + text_str
-        text = wx.StaticText(self, -1, text_str, size=(110,20))
-        modified_font=text.GetFont()
+        text = wx.StaticText(self, -1, coef_str)
+        modified_font = text.GetFont()
         modified_font.SetPixelSize((20,20))
         modified_font.SetWeight(wx.FONTWEIGHT_BOLD)
         text.SetFont(modified_font)
-        self.sizer.Add(text, 0, wx.EXPAND|wx.RIGHT|wx.LEFT, 12)
+        if coef >= 0:
+            text.SetForegroundColour((0, 0, 200))
+        else:
+            text.SetForegroundColour((200, 0, 0))
+        self.sizer.Add(text, 0, wx.LEFT, 12)
+
+        # Now add the count for this size
+        if counts_per_colorset_size:
+            text_str = u' \u00d7 ' + str(counts_per_colorset_size[len(color_sets[0])])
+        else:
+            text_str = u' \u00d7 ' + str(len(color_sets))
+        text = wx.StaticText(self, -1, text_str, size=(110,20))
+        text.SetFont(modified_font)
+        self.sizer.Add(text, 0, wx.EXPAND|wx.RIGHT, 12)
 
         # Add the color set widgets
         self.color_set_sizer = wx.WrapSizer(wx.HORIZONTAL)
