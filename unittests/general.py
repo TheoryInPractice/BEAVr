@@ -51,7 +51,7 @@ class TestUtil(unittest.TestCase):
         for exp_map_col, act_map_col in zip(expected_mapped, actual_mapped):
             for exp, act in zip(exp_map_col, act_map_col):
                 self.assertEqual(exp, act, msg="Mapped colorings" +\
-                                "\n  Expected: " + str(exp_map_col) + \
+                                "\n  Expected: " + str(exp_map_col) +\
                                 "\n  Actual:   " + str(act_map_col))
 
     def test_map_coloring(self):
@@ -64,7 +64,7 @@ class TestUtil(unittest.TestCase):
 
         for exp, act in zip(expected_mapped, actual_mapped):
             self.assertEqual(exp, act, msg="Mapped coloring" +\
-                            "\n  Expected: " + str(expected_mapped) + \
+                            "\n  Expected: " + str(expected_mapped) +\
                             "\n  Actual:   " + str(actual_mapped))
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestUtil)
