@@ -45,10 +45,6 @@ class MainInterface(wx.Frame):
         if filename is not None:
             self.load_file(filename)
 
-        graph_name, pattern_name, config_name = self.dl.title_items
-        title_text = u"Visualization Tool \u2014 " + graph_name + ", " + pattern_name + " (" + config_name + ")"
-        self.SetTitle(title_text)
-
     def _make_menubar(self):
         """Create, populate, and show the menubar"""
         # Menubar setup
@@ -156,6 +152,11 @@ class MainInterface(wx.Frame):
             e_dlg = wx.MessageDialog(None, e.msg, 'Error', wx.ICON_ERROR)
             e_dlg.ShowModal()
         else:
+            # Set the title bar
+            graph_name, pattern_name, config_name = self.dl.title_items
+            title_text = u"Visualization Tool \u2014 " + graph_name + ", " + pattern_name + " (" + config_name + ")"
+            self.SetTitle(title_text)
+
             colorStage = ColorInterface(self.notebook)
             self.remove_all_tabs()
             self.add_tab(colorStage)
