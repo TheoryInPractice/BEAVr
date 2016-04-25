@@ -196,7 +196,7 @@ class MainInterface(wx.Frame):
     def OnAbout(self, e):
         """Show an about box"""
         info = wx.AboutDialogInfo()
-        info.Name = "Visualization Tool"
+        info.Name = "BEAVr - Bounded Expansion Algorithm Visualizer"
         info.Copyright = "(C) 2016 Team 9"
         info.Description = "A tool for visualizing graph algorithmic pipelines"
         info.WebSite = ("https://github.ncsu.edu/engr-csc-sdc/2016springTeam09",
