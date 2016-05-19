@@ -20,19 +20,19 @@ Contains filenames of graphs within the archive
 * **[graph.???\*]**
 * **[pattern.???]**
 * **color/**
-..* **orientation.txt**
-..* **arcs.txt**
-..* **colorings/**
-....* **0**
-....* **1**
-....* ...
+    * **orientation.txt**
+    * **arcs.txt**
+    * **colorings/**
+        * **0**
+        * **1**
+        * ...
 * **count/**
-..* **big_component.txt** : The largest component found during the decomposition stage, in edgelist format, with vertices numbered the same as in **graph.???**
-..* **dp_table.txt** : The dynamic programming table generated while counting the number of occurrences of **pattern.???** in the given component.  The format of this file is given below in section 5.2.1. 
-..* **tdd.txt** : The treedepth decomposition of the component in big_component.txt computed by CONCUSS.
+    * **big_component.txt** : The largest component found during the decomposition stage, in edgelist format, with vertices numbered the same as in **graph.???**
+    * **dp_table.txt** : The dynamic programming table generated while counting the number of occurrences of **pattern.???** in the given component.  The format of this file is given below in section 5.2.1. 
+    * **tdd.txt** : The treedepth decomposition of the component in big_component.txt computed by CONCUSS.
 
 * **combine/**
-..* **counts_per_colorset.txt** : Counts of the motif for each color set that CONCUSS iterates over. The format of this file is given below in section 5.2.3.
+    * **counts_per_colorset.txt** : Counts of the motif for each color set that CONCUSS iterates over. The format of this file is given below in section 5.2.3.
 
 *where ??? is one of {gml, txt, graphml, leda, gexf}.
 
@@ -107,7 +107,7 @@ wxPython Installation Fixes for OSX:
 
 Once all required dependencies have been installed, the next step is to download BEAVr from this repository.  The preferred way to do this is using git, with the command:
 
-    $ git clone https://github.ncsu.edu/engr-csc-sdc/2016springTeam09.git
+    $ git clone https://github.ncsu.edu/engr-csc-sdc/2016springTeam09.git 
 
 This downloads the current development version of BEAVr into a directory called 2016springTeam09.  You can now start the tool by running the vistool.py file.
 
@@ -121,7 +121,7 @@ The package names may vary for different distributions, and an exhaustive list f
 
 Once these dependencies have been installed, the next step is to download BEAVr from Github.  The preferred way to do this is using git, with the command:
 
-    $ git clone https://github.ncsu.edu/engr-csc-sdc/2016springTeam09.git
+    $ git clone https://github.ncsu.edu/engr-csc-sdc/2016springTeam09.git 
 
 You can now start the tool by running the run_beavr.py file.
 ## Acknowledgements
