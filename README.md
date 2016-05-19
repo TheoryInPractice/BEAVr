@@ -34,7 +34,7 @@ Contains filenames of graphs within the archive
 * **combine/**
     * **counts_per_colorset.txt** : Counts of the motif for each color set that CONCUSS iterates over. The format of this file is given below in section 5.2.3.
 
-*where ??? is one of {gml, txt, graphml, leda, gexf}.
+\*where ??? is one of {gml, txt, graphml, leda, gexf}.
 
 ### Color Tab
 
