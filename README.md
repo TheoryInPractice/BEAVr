@@ -6,7 +6,7 @@ To run the program, execute the following command in the command line.
     
 If the program is run without an filename argument, then a blank tab with the title “No Visualization” appears. The toolbar contains a button that allows users to quickly open a ZIP file containing pipeline execution data. Once an archive has been opened, the layout will change into something similar to this:
 
-![](MainScreen.png)
+![](Screenshots/MainScreen.png)
 
 Each tab contains a visualization of a particular step.
 
@@ -38,13 +38,13 @@ Contains filenames of graphs within the archive
 
 ### Color Tab
 
-![](MainScreen.png)
+![](Screenshots/MainScreen.png)
 
 The color tab has three buttons on the toolbar and a view of the host graph. The arrow buttons allow the user to step forwards and backwards through the steps of the coloring stage of CONCUSS. The die icon randomizes the layout of the graph. 
 
 ### Decompose Tab
 
-![](DecomposeScreen.png)
+![](Screenshots/DecomposeScreen.png)
 
 The toolbar for the decompose tab is a series of togglable buttons for each color in the graph. When a color is selected, the visual is updated to display each component of the graph that contain the selected color. A legend is in the upper left corner of the display that lists the current selection of colors. 
 
@@ -52,7 +52,7 @@ For components that occur multiple times, only one instance is displayed with a 
 
 ### Count Tab
 
-![](CountScreen.png)
+![](Screenshots/CountScreen.png)
 
 The Count tab gives an overview of how CONCUSS counts the number of occurrences of a motif in each subgraph found in the Decompose stage.  The visualization focuses on the largest subgraph found during the execution of CONCUSS, whose color set is shown in the upper-left corner of the display.
 
@@ -60,7 +60,7 @@ The display consists of three columns.  At the top of each column, a k-pattern o
 
 ### Combine Tab
 
-![](CombineScreen.png)
+![](Screenshots/CombineScreen.png)
 
 The combine tab shown above does not contain a toolbar on the side. Rather, it contains buttons for four different colorings of the pattern as well as a button for the total computation. Each button corresponds to a different page. Each page illustrates the inclusion and exclusion formula. 
 
