@@ -5,8 +5,7 @@
 # the three-clause BSD license; see LICENSE.
 #
 
-from beavr.visapplication import VisApplication
+from beavr.visapplication import run
 
 if __name__ == '__main__':
-    app = VisApplication()
-    app.MainLoop()
+    run()

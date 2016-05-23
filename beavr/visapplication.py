@@ -34,3 +34,9 @@ class VisApplication(wx.App):
         self.frame.Show()
 
         return True
+
+
+def run():
+    """Run BEAVr"""
+    app = VisApplication()
+    app.MainLoop()
