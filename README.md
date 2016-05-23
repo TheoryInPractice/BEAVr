@@ -28,11 +28,11 @@ Contains filenames of graphs within the archive
         * ...
 * **count/**
     * **big_component.txt** : The largest component found during the decomposition stage, in edgelist format, with vertices numbered the same as in **graph.???**
-    * **dp_table.txt** : The dynamic programming table generated while counting the number of occurrences of **pattern.???** in the given component.  The format of this file is given below in section 5.2.1. 
+    * **dp_table.txt** : The dynamic programming table generated while counting the number of occurrences of **pattern.???** in the given component.
     * **tdd.txt** : The treedepth decomposition of the component in big_component.txt computed by CONCUSS.
 
 * **combine/**
-    * **counts_per_colorset.txt** : Counts of the motif for each color set that CONCUSS iterates over. The format of this file is given below in section 5.2.3.
+    * **counts_per_colorset.txt** : Counts of the motif for each color set that CONCUSS iterates over.
 
 \*where ??? is one of {gml, txt, graphml, leda, gexf}.
 
