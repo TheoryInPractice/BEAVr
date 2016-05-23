@@ -4,15 +4,23 @@
 # the three-clause BSD license; see LICENSE.
 #
 
+import pkg_resources
+
 def load_palette(palette_filename):
     """Load colors from palette, map colorings to palette colors"""
     palette = []
-    with open('data/palettes/'+palette_filename) as palette_file:
+    with pkg_resources.resource_stream(__name__,
+            'data/palettes/'+palette_filename) as palette_file:
         for line in palette_file:
             line = line.strip()
             if '#' not in line and ',' in line:
                 palette.append([int(c)/255.0 for c in line.split(',')])
     return palette
+
+
+def resource_filename(name):
+    """Return a filename of a resource from the beavr package"""
+    return pkg_resources.resource_filename(__name__, name)
 
 
 def map_colorings(palette, colorings):

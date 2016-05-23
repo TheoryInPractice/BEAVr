@@ -19,7 +19,7 @@ from matplotlib.figure import Figure
 
 from beavr.stageinterface import StageInterface, StageVisualizer, MatplotlibVisualizer
 from beavr.concuss.visualizerbackend import DecompositionGenerator, CombineSetGenerator, CountGenerator
-from beavr.util import load_palette, map_coloring, map_colorings, choose
+from beavr.util import load_palette, resource_filename, map_coloring, map_colorings, choose
 
 class ColorInterface(StageInterface):
     """GUI elements for CONCUSS coloring stage visualization"""
@@ -45,7 +45,7 @@ class ColorInterface(StageInterface):
         self.tb.AddSeparator()
 
         # Random Layout buton
-        tali_path = path.join(os.getcwd(), 'data', 'icons', 'tali.png')
+        tali_path = resource_filename("data/icons/tali.png")
         rand_bmp = wx.Bitmap(tali_path, wx.BITMAP_TYPE_PNG)
         rand = self.tb.AddLabelTool(wx.NewId(), "Random Layout", rand_bmp)
         self.Bind(wx.EVT_TOOL, self.on_random, rand)
@@ -146,7 +146,7 @@ class CountInterface(StageInterface):
         super(CountInterface, self).__init__(parent)
 
         # Random Layout buton
-        tali_path = path.join(os.getcwd(), 'data', 'icons', 'tali.png')
+        tali_path = resource_filename("data/icons/tali.png")
         rand_bmp = wx.Bitmap(tali_path, wx.BITMAP_TYPE_PNG)
         rand = self.tb.AddLabelTool(wx.NewId(), "Random Patterns", rand_bmp)
         self.Bind(wx.EVT_TOOL, self.on_random, rand)
