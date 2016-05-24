@@ -124,4 +124,6 @@ Once these dependencies have been installed, the next step is to download BEAVr 
     $ git clone https://github.com/TheoryInPractice/BEAVr.git
 
 You can now start the tool by running the run_beavr.py file.
+
 ## Acknowledgements
+We would like to thank the Senior Design Center at NC State, Dr. Blair Sullivan, and Dr. Felix Reidl for their support and guidance.
