@@ -126,4 +126,6 @@ Once these dependencies have been installed, the next step is to download BEAVr 
 You can now start the tool by running the run_beavr.py file.
 
 ## Acknowledgements
-We would like to thank the Senior Design Center at NC State, Dr. Blair Sullivan, and Dr. Felix Reidl for their support and guidance.
+Development of BEAVr was made possible by:
+- NC State University's CSC Senior Design Center
+- the [Gordon & Betty Moore Foundation Data-Driven Discovery Initiative](https://www.moore.org/programs/science/data-driven-discovery), through a [DDD Investigator Award](https://www.moore.org/programs/science/data-driven-discovery/investigators) to Blair D. Sullivan ([grant GBMF4560](https://www.moore.org/grants/list/GBMF4560)). 
