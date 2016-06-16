@@ -1,4 +1,6 @@
 # BEAVr: Bounded Expansion Algorithm Visualizer 
+BEAVr is a Python tool offering interactive visualization of the algorithmic pipeline for counting subgraph isomorphisms in graph classes of bounded expansion, as implemented in [CONCUSS](https://github.com/TheoryInPractice/CONCUSS). BEAVr visually represents the data transformations and information in each stage of the pipeline (p-centered colorings, tree-depth decompositions, dynamic programming with k-patterns, and final counts via inclusion-exclusion). For researchers, BEAVr also enables exploration of new coloring heuristics via detailed visualization of each step of the coloring stage.   
+
 ## Usage
 To run the program, execute the following command in the command line. 
 
