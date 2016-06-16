@@ -1,0 +1,30 @@
+*********
+Citations
+*********
+
+Software Citation
+=================
+
+If you use the BEAVr software, you must cite:
+
+Y. Ho, C.G. Hobbs, B. Mork, F. Reidl, N.G. Rodrigues, and B.D. Sullivan. (2016). 
+BEAVr: Version 1.0. Zenodo. 10.5281/zenodo.55328 
+
+..code-block::tex
+
+@misc{CONCUSS_v1.0,
+  author       = {Yang Ho and 
+                  Clayton G. Hobbs and
+                  Brandon Mork  and
+                  Felix Reidl and
+                  Nishant G. Rodrigues and
+                  Blair D. Sullivan},
+  title        = {BEAVr: Version 1.0},
+  month        = jun,
+  year         = 2016,
+  doi          = {10.5281/zenodo.55328},
+  url          = {http://dx.doi.org/10.5281/zenodo.55328}
+}
+
+If you also use the CONCUSS pipeline, you should cite the relevant software and paper(s) as directed at github.com/TheoryInPractice/CONCUSS/CITATION.
+
